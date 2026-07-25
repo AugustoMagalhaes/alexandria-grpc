@@ -9,5 +9,6 @@ if(BUILD_TESTING)
     enable_testing()
 endif()
 
+add_subdirectory(proto)
 add_subdirectory(server)
 add_subdirectory(client)

@@ -17,3 +17,7 @@ target_link_libraries(alexandria_persistence
         alexandria_repository
         Qt6::Sql
 )
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()

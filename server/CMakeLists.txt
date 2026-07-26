@@ -40,6 +40,7 @@ add_library(alexandria_service STATIC
     service/OperationResult.cpp
     service/BookService.cpp
     service/UserService.cpp
+    service/CsvService.cpp
 )
 
 target_include_directories(alexandria_service PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -67,8 +68,21 @@ target_link_libraries(alexandria_grpc_server
         alexandria_auth
 )
 
-target_sources(alexandria_service PRIVATE
-    service/CsvService.cpp
+add_executable(alexandria_server
+    main.cpp
+)
+
+target_link_libraries(alexandria_server
+    PRIVATE
+        alexandria_persistence
+        alexandria_auth
+        alexandria_service
+        alexandria_grpc_server
+        Qt6::Core
+)
+
+install(TARGETS alexandria_server
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 if(BUILD_TESTING)

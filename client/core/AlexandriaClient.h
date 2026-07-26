@@ -33,6 +33,7 @@ public:
     ClientResult<User> createUser(const std::string& username, const std::string& password, Role role);
     ClientResult<std::vector<User>> listUsers();
     ClientResult<void> deleteUser(int id);
+    ClientResult<void> checkConnection(int timeoutMs);
 
 private:
     std::shared_ptr<grpc::Channel> m_channel;

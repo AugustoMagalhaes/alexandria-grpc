@@ -35,6 +35,11 @@ Item {
             }
 
             Button {
+                text: qsTr("Change server")
+                onClicked: Session.requestServerChange()
+            }
+
+            Button {
                 text: qsTr("Log out")
                 onClicked: Session.logout()
             }

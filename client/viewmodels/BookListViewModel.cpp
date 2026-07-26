@@ -47,6 +47,8 @@ void BookListViewModel::refresh(const QString& search)
         return;
     }
 
+    m_lastSearch = search;
+
     setBusy(true);
     setErrorMessage(QString());
 
@@ -81,6 +83,34 @@ void BookListViewModel::refresh(const QString& search)
     AlexandriaClient& client = Session::instance()->client();
     QFuture<ClientResult<std::vector<Book>>> future = QtConcurrent::run([&client, search]() {
         return client.listBooks(search.toStdString());
+    });
+
+    watcher->setFuture(future);
+}
+
+void BookListViewModel::deleteBook(int id)
+{
+    setBusy(true);
+    setErrorMessage(QString());
+
+    auto* watcher = new QFutureWatcher<ClientResult<void>>(this);
+
+    QObject::connect(watcher, &QFutureWatcher<ClientResult<void>>::finished, this, [this, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!result.success) {
+            setBusy(false);
+            setErrorMessage(QString::fromStdString(result.error));
+            return;
+        }
+
+        refresh(m_lastSearch);
+    });
+
+    AlexandriaClient& client = Session::instance()->client();
+    QFuture<ClientResult<void>> future = QtConcurrent::run([&client, id]() {
+        return client.deleteBook(id);
     });
 
     watcher->setFuture(future);

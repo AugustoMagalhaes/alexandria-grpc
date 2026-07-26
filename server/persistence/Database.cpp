@@ -42,3 +42,8 @@ bool Database::migrate()
 
     return booksOk && usersOk;
 }
+
+std::mutex& Database::mutex()
+{
+    return m_mutex;
+}

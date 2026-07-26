@@ -21,6 +21,7 @@ public:
     QString errorMessage() const;
 
     Q_INVOKABLE void refresh(const QString& search = QString());
+    Q_INVOKABLE void deleteBook(int id);
 
 signals:
     void booksChanged();
@@ -31,6 +32,7 @@ private:
     QVariantList m_books;
     bool m_busy = false;
     QString m_errorMessage;
+    QString m_lastSearch;
 
     void setBusy(bool busy);
     void setErrorMessage(const QString& message);

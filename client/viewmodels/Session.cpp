@@ -1,6 +1,7 @@
 #include "viewmodels/Session.h"
 
 #include <QFutureWatcher>
+#include <QSettings>
 #include <QtConcurrent/QtConcurrent>
 
 Session* Session::s_instance = nullptr;
@@ -8,8 +9,14 @@ Session* Session::s_instance = nullptr;
 Session::Session(QObject* parent)
     : QObject(parent)
 {
-    m_client = std::make_unique<AlexandriaClient>("127.0.0.1:50051");
+    QSettings settings;
+    m_serverAddress = settings.value("server/address").toString();
+    m_client = std::make_unique<AlexandriaClient>(m_serverAddress.toStdString());
     s_instance = this;
+
+    if (!m_serverAddress.isEmpty()) {
+        checkConnection();
+    }
 }
 
 Session* Session::instance()
@@ -42,6 +49,26 @@ QString Session::errorMessage() const
     return m_errorMessage;
 }
 
+QString Session::serverAddress() const
+{
+    return m_serverAddress;
+}
+
+bool Session::isServerConfigured() const
+{
+    return m_serverConfigured;
+}
+
+bool Session::isConnecting() const
+{
+    return m_connecting;
+}
+
+QString Session::connectionError() const
+{
+    return m_connectionError;
+}
+
 void Session::setBusy(bool busy)
 {
     if (m_busy != busy) {
@@ -54,6 +81,60 @@ void Session::setErrorMessage(const QString& message)
 {
     m_errorMessage = message;
     emit errorMessageChanged();
+}
+
+void Session::connectToServer(const QString& address)
+{
+    QSettings settings;
+    settings.setValue("server/address", address);
+
+    m_serverAddress = address;
+    m_client = std::make_unique<AlexandriaClient>(address.toStdString());
+    emit serverAddressChanged();
+
+    checkConnection();
+}
+
+void Session::requestServerChange()
+{
+    m_serverConfigured = false;
+    m_connectionError.clear();
+    emit serverConfiguredChanged();
+    emit connectionStateChanged();
+}
+
+void Session::checkConnection()
+{
+    m_connecting = true;
+    m_connectionError.clear();
+    emit connectionStateChanged();
+
+    auto* watcher = new QFutureWatcher<ClientResult<void>>(this);
+
+    QObject::connect(watcher, &QFutureWatcher<ClientResult<void>>::finished, this, [this, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        m_connecting = false;
+
+        if (!result.success) {
+            m_serverConfigured = false;
+            m_connectionError = QString::fromStdString(result.error);
+            emit connectionStateChanged();
+            return;
+        }
+
+        m_serverConfigured = true;
+        emit serverConfiguredChanged();
+        emit connectionStateChanged();
+    });
+
+    AlexandriaClient* clientPtr = m_client.get();
+    QFuture<ClientResult<void>> future = QtConcurrent::run([clientPtr]() {
+        return clientPtr->checkConnection(3000);
+    });
+
+    watcher->setFuture(future);
 }
 
 void Session::login(const QString& username, const QString& password)

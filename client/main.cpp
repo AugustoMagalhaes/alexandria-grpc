@@ -7,6 +7,8 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    QCoreApplication::setOrganizationName("Alexandria");
+    QCoreApplication::setApplicationName("AlexandriaClient");
 
     Session session;
 

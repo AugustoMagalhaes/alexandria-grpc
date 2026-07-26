@@ -11,13 +11,18 @@ ApplicationWindow {
     visible: true
     title: qsTr("Alexandria")
 
+    ServerSetupPage {
+        anchors.fill: parent
+        visible: !Session.serverConfigured
+    }
+
     LoginPage {
         anchors.fill: parent
-        visible: !Session.authenticated
+        visible: Session.serverConfigured && !Session.authenticated
     }
 
     BookListPage {
         anchors.fill: parent
-        visible: Session.authenticated
+        visible: Session.serverConfigured && Session.authenticated
     }
 }

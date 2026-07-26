@@ -1,4 +1,5 @@
 #include "core/AlexandriaClient.h"
+#include <chrono>
 
 namespace {
 
@@ -256,4 +257,15 @@ ClientResult<void> AlexandriaClient::deleteUser(int id)
     }
 
     return ClientResult<void>::ok();
+}
+
+ClientResult<void> AlexandriaClient::checkConnection(int timeoutMs)
+{
+    auto deadline = std::chrono::system_clock::now() + std::chrono::milliseconds(timeoutMs);
+
+    if (m_channel->WaitForConnected(deadline)) {
+        return ClientResult<void>::ok();
+    }
+
+    return ClientResult<void>::fail("Could not reach the server at the configured address.");
 }

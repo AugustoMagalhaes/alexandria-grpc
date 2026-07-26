@@ -11,6 +11,7 @@ qt_add_qml_module(alexandria_client
         qml/Main.qml
         qml/LoginPage.qml
         qml/BookListPage.qml
+        qml/ServerSetupPage.qml
     SOURCES
         viewmodels/BookListViewModel.h
 )

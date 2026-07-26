@@ -67,6 +67,10 @@ target_link_libraries(alexandria_grpc_server
         alexandria_auth
 )
 
+target_sources(alexandria_service PRIVATE
+    service/CsvService.cpp
+)
+
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()

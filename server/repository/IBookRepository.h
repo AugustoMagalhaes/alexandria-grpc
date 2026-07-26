@@ -15,4 +15,5 @@ public:
     virtual std::vector<Book> findAll(const std::string& search) = 0;
     virtual bool update(const Book& book) = 0;
     virtual bool remove(int id) = 0;
+    virtual std::optional<Book> findByIsbn(const std::string& isbn) = 0;
 };

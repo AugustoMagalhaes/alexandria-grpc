@@ -12,6 +12,7 @@ public:
     std::vector<Book> findAll(const std::string& search) override;
     bool update(const Book& book) override;
     bool remove(int id) override;
+    std::optional<Book> findByIsbn(const std::string& isbn) override;
 
 private:
     Database& m_database;

@@ -23,6 +23,8 @@ SqliteUserRepository::SqliteUserRepository(Database& database)
 
 std::optional<User> SqliteUserRepository::create(const User& user, const std::string& passwordHash)
 {
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
     QSqlQuery query(m_database.handle());
     query.prepare(
         "INSERT INTO users (username, password_hash, role) "
@@ -43,6 +45,8 @@ std::optional<User> SqliteUserRepository::create(const User& user, const std::st
 
 std::vector<User> SqliteUserRepository::findAll()
 {
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
     QSqlQuery query(m_database.handle());
     query.prepare("SELECT id, username, role FROM users ORDER BY username");
 
@@ -61,6 +65,8 @@ std::vector<User> SqliteUserRepository::findAll()
 
 bool SqliteUserRepository::remove(int id)
 {
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
     QSqlQuery query(m_database.handle());
     query.prepare("DELETE FROM users WHERE id = :id");
     query.bindValue(":id", id);
@@ -70,6 +76,8 @@ bool SqliteUserRepository::remove(int id)
 
 std::optional<UserCredentials> SqliteUserRepository::findCredentialsByUsername(const std::string& username)
 {
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
     QSqlQuery query(m_database.handle());
     query.prepare("SELECT * FROM users WHERE username = :username");
     query.bindValue(":username", QString::fromStdString(username));

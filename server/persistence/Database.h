@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mutex>
+
 #include <QSqlDatabase>
 #include <QString>
 
@@ -10,6 +12,9 @@ public:
     QSqlDatabase& handle();
     bool migrate();
 
+    std::mutex& mutex();
+
 private:
     QSqlDatabase m_db;
+    std::mutex m_mutex;
 };

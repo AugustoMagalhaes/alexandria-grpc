@@ -26,6 +26,8 @@ SqliteBookRepository::SqliteBookRepository(Database& database)
 
 std::optional<Book> SqliteBookRepository::create(const Book& book)
 {
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
     QSqlQuery query(m_database.handle());
     query.prepare(
         "INSERT INTO books (title, author, isbn, total_copies, available_copies) "
@@ -41,11 +43,23 @@ std::optional<Book> SqliteBookRepository::create(const Book& book)
         return std::nullopt;
     }
 
-    return findById(query.lastInsertId().toInt());
+    const int newId = query.lastInsertId().toInt();
+
+    QSqlQuery selectQuery(m_database.handle());
+    selectQuery.prepare("SELECT * FROM books WHERE id = :id");
+    selectQuery.bindValue(":id", newId);
+
+    if (!selectQuery.exec() || !selectQuery.next()) {
+        return std::nullopt;
+    }
+
+    return bookFromQuery(selectQuery);
 }
 
 std::optional<Book> SqliteBookRepository::findById(int id)
 {
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
     QSqlQuery query(m_database.handle());
     query.prepare("SELECT * FROM books WHERE id = :id");
     query.bindValue(":id", id);
@@ -57,8 +71,25 @@ std::optional<Book> SqliteBookRepository::findById(int id)
     return bookFromQuery(query);
 }
 
+std::optional<Book> SqliteBookRepository::findByIsbn(const std::string& isbn)
+{
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
+    QSqlQuery query(m_database.handle());
+    query.prepare("SELECT * FROM books WHERE isbn = :isbn");
+    query.bindValue(":isbn", QString::fromStdString(isbn));
+
+    if (!query.exec() || !query.next()) {
+        return std::nullopt;
+    }
+
+    return bookFromQuery(query);
+}
+
 std::vector<Book> SqliteBookRepository::findAll(const std::string& search)
 {
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
     QSqlQuery query(m_database.handle());
 
     if (search.empty()) {
@@ -87,6 +118,8 @@ std::vector<Book> SqliteBookRepository::findAll(const std::string& search)
 
 bool SqliteBookRepository::update(const Book& book)
 {
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
     QSqlQuery query(m_database.handle());
     query.prepare(
         "UPDATE books SET title = :title, author = :author, isbn = :isbn, "
@@ -105,22 +138,11 @@ bool SqliteBookRepository::update(const Book& book)
 
 bool SqliteBookRepository::remove(int id)
 {
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
     QSqlQuery query(m_database.handle());
     query.prepare("DELETE FROM books WHERE id = :id");
     query.bindValue(":id", id);
 
     return query.exec() && query.numRowsAffected() > 0;
-}
-
-std::optional<Book> SqliteBookRepository::findByIsbn(const std::string& isbn)
-{
-    QSqlQuery query(m_database.handle());
-    query.prepare("SELECT * FROM books WHERE isbn = :isbn");
-    query.bindValue(":isbn", QString::fromStdString(isbn));
-
-    if (!query.exec() || !query.next()) {
-        return std::nullopt;
-    }
-
-    return bookFromQuery(query);
 }

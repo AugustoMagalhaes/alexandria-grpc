@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 3.16)
 project(alexandria VERSION 0.1.0 LANGUAGES C CXX)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Sql Quick QuickControls2 Test)
-qt_standard_project_setup(REQUIRES 6.10)
+option(BUILD_CLIENT "Build the QML desktop client" ON)
+
+if(BUILD_CLIENT)
+    find_package(Qt6 REQUIRED COMPONENTS Core Sql Quick QuickControls2 Test)
+else()
+    find_package(Qt6 REQUIRED COMPONENTS Core Sql Test)
+endif()
+
+qt_standard_project_setup(REQUIRES 6.5)
 
 option(BUILD_TESTING "Build unit tests" ON)
-
 if(BUILD_TESTING)
     enable_testing()
     include(FetchContent)
@@ -20,4 +26,7 @@ endif()
 
 add_subdirectory(proto)
 add_subdirectory(server)
-add_subdirectory(client)
+
+if(BUILD_CLIENT)
+    add_subdirectory(client)
+endif()

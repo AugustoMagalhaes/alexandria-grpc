@@ -11,3 +11,5 @@ cmake_install.cmake
 Makefile
 *.autosave
 .qtcreator/
+*.db
+*.log

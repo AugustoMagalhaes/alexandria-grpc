@@ -5,6 +5,7 @@ add_executable(alexandria_server_tests
     AuthServiceTest.cpp
     BookServiceTest.cpp
     UserServiceTest.cpp
+    CsvServiceTest.cpp
 )
 
 target_link_libraries(alexandria_server_tests

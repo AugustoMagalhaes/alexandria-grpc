@@ -51,6 +51,22 @@ target_link_libraries(alexandria_service
         alexandria_auth
 )
 
+add_library(alexandria_grpc_server STATIC
+    grpc/AuthGuard.cpp
+    grpc/AuthServiceImpl.cpp
+    grpc/BookServiceImpl.cpp
+    grpc/UserServiceImpl.cpp
+)
+
+target_include_directories(alexandria_grpc_server PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(alexandria_grpc_server
+    PUBLIC
+        alexandria_proto
+        alexandria_service
+        alexandria_auth
+)
+
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()

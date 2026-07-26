@@ -11,13 +11,27 @@ ApplicationWindow {
     visible: true
     title: qsTr("Alexandria")
 
+    property bool serverConfirmed: false
+
+    ServerSetupPage {
+        anchors.fill: parent
+        visible: !window.serverConfirmed
+    }
+
     LoginPage {
         anchors.fill: parent
-        visible: !Session.authenticated
+        visible: window.serverConfirmed && !Session.authenticated
     }
 
     BookListPage {
         anchors.fill: parent
-        visible: Session.authenticated
+        visible: window.serverConfirmed && Session.authenticated
+    }
+
+    Connections {
+        target: Session
+        function onServerAddressChanged() {
+            window.serverConfirmed = true
+        }
     }
 }

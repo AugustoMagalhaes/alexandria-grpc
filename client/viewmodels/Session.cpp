@@ -1,6 +1,7 @@
 #include "viewmodels/Session.h"
 
 #include <QFutureWatcher>
+#include <QSettings>
 #include <QtConcurrent/QtConcurrent>
 
 Session* Session::s_instance = nullptr;
@@ -8,7 +9,9 @@ Session* Session::s_instance = nullptr;
 Session::Session(QObject* parent)
     : QObject(parent)
 {
-    m_client = std::make_unique<AlexandriaClient>("127.0.0.1:50051");
+    QSettings settings;
+    m_serverAddress = settings.value("server/address", "127.0.0.1:50051").toString();
+    m_client = std::make_unique<AlexandriaClient>(m_serverAddress.toStdString());
     s_instance = this;
 }
 
@@ -42,6 +45,16 @@ QString Session::errorMessage() const
     return m_errorMessage;
 }
 
+QString Session::serverAddress() const
+{
+    return m_serverAddress;
+}
+
+bool Session::isConnected() const
+{
+    return !m_serverAddress.isEmpty();
+}
+
 void Session::setBusy(bool busy)
 {
     if (m_busy != busy) {
@@ -54,6 +67,16 @@ void Session::setErrorMessage(const QString& message)
 {
     m_errorMessage = message;
     emit errorMessageChanged();
+}
+
+void Session::connectToServer(const QString& address)
+{
+    QSettings settings;
+    settings.setValue("server/address", address);
+
+    m_serverAddress = address;
+    m_client = std::make_unique<AlexandriaClient>(address.toStdString());
+    emit serverAddressChanged();
 }
 
 void Session::login(const QString& username, const QString& password)

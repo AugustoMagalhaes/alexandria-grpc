@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Basic
+import QtQuick.Layouts
 import Alexandria
 
 Item {
@@ -18,13 +19,36 @@ Item {
         color: "#f0f0f0"
     }
 
-    ListView {
+    ColumnLayout {
         anchors.fill: parent
-        model: viewModel.books
+        spacing: 0
 
-        delegate: ItemDelegate {
-            width: ListView.view.width
-            text: modelData.title + " — " + modelData.author
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.margins: 12
+
+            Label {
+                text: Session.isAdmin ? qsTr("Books (Administrator)") : qsTr("Books")
+                font.pixelSize: 18
+                font.bold: true
+                Layout.fillWidth: true
+            }
+
+            Button {
+                text: qsTr("Log out")
+                onClicked: Session.logout()
+            }
+        }
+
+        ListView {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            model: viewModel.books
+
+            delegate: ItemDelegate {
+                width: ListView.view.width
+                text: modelData.title + " — " + modelData.author
+            }
         }
     }
 

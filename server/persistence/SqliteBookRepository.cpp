@@ -111,3 +111,16 @@ bool SqliteBookRepository::remove(int id)
 
     return query.exec() && query.numRowsAffected() > 0;
 }
+
+std::optional<Book> SqliteBookRepository::findByIsbn(const std::string& isbn)
+{
+    QSqlQuery query(m_database.handle());
+    query.prepare("SELECT * FROM books WHERE isbn = :isbn");
+    query.bindValue(":isbn", QString::fromStdString(isbn));
+
+    if (!query.exec() || !query.next()) {
+        return std::nullopt;
+    }
+
+    return bookFromQuery(query);
+}

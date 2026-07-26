@@ -36,6 +36,21 @@ target_link_libraries(alexandria_auth
         PkgConfig::SODIUM
 )
 
+add_library(alexandria_service STATIC
+    service/OperationResult.cpp
+    service/BookService.cpp
+    service/UserService.cpp
+)
+
+target_include_directories(alexandria_service PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(alexandria_service
+    PUBLIC
+        alexandria_repository
+    PRIVATE
+        alexandria_auth
+)
+
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()

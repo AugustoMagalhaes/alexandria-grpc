@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(alexandria VERSION 0.1.0 LANGUAGES CXX)
+project(alexandria VERSION 0.1.0 LANGUAGES C CXX)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Sql Quick QuickControls2 Test)
 qt_standard_project_setup(REQUIRES 6.10)

@@ -4,7 +4,7 @@ project(alexandria VERSION 0.1.0 LANGUAGES C CXX)
 option(BUILD_CLIENT "Build the QML desktop client" ON)
 
 if(BUILD_CLIENT)
-    find_package(Qt6 REQUIRED COMPONENTS Core Sql Quick QuickControls2 Test)
+    find_package(Qt6 REQUIRED COMPONENTS Core Sql Quick QuickControls2 Concurrent Test)
 else()
     find_package(Qt6 REQUIRED COMPONENTS Core Sql Test)
 endif()

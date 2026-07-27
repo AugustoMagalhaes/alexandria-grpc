@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
-import Qt.labs.platform as Platform
+import QtQuick.Dialogs
 import Alexandria
 
 Item {
@@ -32,13 +32,13 @@ Item {
         id: csvImportDialog
     }
 
-    Platform.FileDialog {
+    FileDialog {
         id: exportDialog
         title: qsTr("Save CSV file")
-        fileMode: Platform.FileDialog.SaveFile
+        fileMode: FileDialog.SaveFile
         nameFilters: [qsTr("CSV files (*.csv)")]
         defaultSuffix: "csv"
-        onAccepted: csvExportModel.exportToFile(file.toString().replace("file://", ""))
+        onAccepted: csvExportModel.exportToFile(selectedFile.toString().replace("file://", ""))
     }
 
     CsvViewModel {

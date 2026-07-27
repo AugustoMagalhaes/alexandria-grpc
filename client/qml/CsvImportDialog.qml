@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
-import Qt.labs.platform as Platform
+import QtQuick.Dialogs
 import Alexandria
 
 Dialog {
@@ -30,11 +30,11 @@ Dialog {
         replaceExisting = false
     }
 
-    Platform.FileDialog {
+    FileDialog {
         id: fileDialog
         title: qsTr("Select CSV file")
         nameFilters: [qsTr("CSV files (*.csv)")]
-        onAccepted: dialog.selectedFilePath = file.toString().replace("file://", "")
+        onAccepted: dialog.selectedFilePath = selectedFile.toString().replace("file://", "")
     }
 
     ColumnLayout {

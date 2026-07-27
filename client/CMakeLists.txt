@@ -20,6 +20,8 @@ qt_add_qml_module(alexandria_client
         qml/AppButton.qml
         qml/AppTextField.qml
         qml/AppSpinBox.qml
+        qml/AppCheckBox.qml
+        qml/AppRadioButton.qml
         qml/Main.qml
         qml/LoginPage.qml
         qml/BookListPage.qml

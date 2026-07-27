@@ -269,3 +269,42 @@ ClientResult<void> AlexandriaClient::checkConnection(int timeoutMs)
 
     return ClientResult<void>::fail("Could not reach the server at the configured address.");
 }
+
+ClientResult<std::string> AlexandriaClient::exportBooksCsv()
+{
+    alexandria::v1::ExportBooksRequest request;
+    alexandria::v1::ExportBooksResponse response;
+    grpc::ClientContext context;
+    attachToken(context);
+
+    grpc::Status status = m_bookStub->ExportBooks(&context, request, &response);
+
+    if (!status.ok()) {
+        return ClientResult<std::string>::fail(status.error_message());
+    }
+
+    return ClientResult<std::string>::ok(response.csv_data());
+}
+
+ClientResult<void> AlexandriaClient::importBooksCsv(const std::string& csvData, bool replace)
+{
+    alexandria::v1::ImportBooksRequest request;
+    request.set_csv_data(csvData);
+    request.set_mode(replace ? alexandria::v1::CSV_IMPORT_MODE_REPLACE : alexandria::v1::CSV_IMPORT_MODE_APPEND);
+
+    alexandria::v1::ImportBooksResponse response;
+    grpc::ClientContext context;
+    attachToken(context);
+
+    grpc::Status status = m_bookStub->ImportBooks(&context, request, &response);
+
+    if (!status.ok()) {
+        return ClientResult<void>::fail(status.error_message());
+    }
+
+    if (!response.success()) {
+        return ClientResult<void>::fail(response.error());
+    }
+
+    return ClientResult<void>::ok();
+}

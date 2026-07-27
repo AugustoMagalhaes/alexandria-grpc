@@ -34,6 +34,8 @@ public:
     ClientResult<std::vector<User>> listUsers();
     ClientResult<void> deleteUser(int id);
     ClientResult<void> checkConnection(int timeoutMs);
+    ClientResult<std::string> exportBooksCsv();
+    ClientResult<void> importBooksCsv(const std::string& csvData, bool replace);
 
 private:
     std::shared_ptr<grpc::Channel> m_channel;

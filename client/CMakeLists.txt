@@ -4,6 +4,9 @@ qt_add_executable(alexandria_client
     viewmodels/Session.cpp
     viewmodels/BookListViewModel.cpp
     viewmodels/BookFormViewModel.cpp
+    viewmodels/UserListViewModel.cpp
+    viewmodels/UserFormViewModel.cpp
+    viewmodels/CsvViewModel.cpp
 )
 
 qt_add_qml_module(alexandria_client
@@ -15,9 +18,15 @@ qt_add_qml_module(alexandria_client
         qml/ServerSetupPage.qml
         qml/BookFormDialog.qml
         qml/DeleteConfirmDialog.qml
+        qml/AdminPanelPage.qml
+        qml/UserFormDialog.qml
+        qml/CsvImportDialog.qml
     SOURCES
         viewmodels/BookListViewModel.h
         viewmodels/BookFormViewModel.h
+        viewmodels/UserListViewModel.h
+        viewmodels/UserFormViewModel.h
+        viewmodels/CsvViewModel.h
 )
 
 target_include_directories(alexandria_client PRIVATE

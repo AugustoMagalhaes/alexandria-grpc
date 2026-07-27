@@ -12,6 +12,7 @@
 #include "auth/SessionManager.h"
 #include "grpc/AuthServiceImpl.h"
 #include "grpc/BookServiceImpl.h"
+#include "service/CsvService.h"
 #include "grpc/UserServiceImpl.h"
 #include "persistence/Database.h"
 #include "persistence/SqliteBookRepository.h"
@@ -62,12 +63,13 @@ int main(int argc, char** argv)
     SessionManager sessionManager;
 
     BookService bookService(bookRepository);
+    CsvService csvService(bookRepository);
     UserService userService(userRepository);
     AuthService authService(userRepository, sessionManager);
 
     seedInitialAdminIfNeeded(userRepository, userService);
 
-    BookServiceImpl bookServiceImpl(bookService, authService);
+    BookServiceImpl bookServiceImpl(bookService, csvService, authService);
     UserServiceImpl userServiceImpl(userService, authService);
     AuthServiceImpl authServiceImpl(authService);
 

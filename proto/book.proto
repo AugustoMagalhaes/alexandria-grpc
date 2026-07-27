@@ -60,4 +60,31 @@ service BookService {
     rpc ListBooks(ListBooksRequest) returns (ListBooksResponse);
     rpc UpdateBook(UpdateBookRequest) returns (UpdateBookResponse);
     rpc DeleteBook(DeleteBookRequest) returns (DeleteBookResponse);
+    rpc ExportBooks(ExportBooksRequest) returns (ExportBooksResponse);
+    rpc ImportBooks(ImportBooksRequest) returns (ImportBooksResponse);
+}
+
+enum CsvImportMode {
+    CSV_IMPORT_MODE_UNSPECIFIED = 0;
+    CSV_IMPORT_MODE_APPEND = 1;
+    CSV_IMPORT_MODE_REPLACE = 2;
+}
+
+message ExportBooksRequest {
+}
+
+message ExportBooksResponse {
+    string csv_data = 1;
+}
+
+message ImportBooksRequest {
+    string csv_data = 1;
+    CsvImportMode mode = 2;
+}
+
+message ImportBooksResponse {
+    bool success = 1;
+    string error = 2;
+    int32 imported_count = 3;
+    int32 skipped_count = 4;
 }

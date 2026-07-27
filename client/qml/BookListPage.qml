@@ -5,6 +5,7 @@ import Alexandria
 
 Item {
     id: page
+    signal adminPanelRequested()
 
     BookListViewModel {
         id: viewModel
@@ -47,6 +48,12 @@ Item {
 
             Item {
                 Layout.fillWidth: true
+            }
+
+            Button {
+                text: qsTr("Manage Users")
+                visible: Session.isAdmin
+                onClicked: page.adminPanelRequested()
             }
 
             Button {

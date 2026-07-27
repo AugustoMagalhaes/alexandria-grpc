@@ -21,6 +21,9 @@ class CsvService {
 public:
     explicit CsvService(IBookRepository& repository);
 
+    std::string exportBooksToString();
+    CsvImportResult importBooksFromString(const std::string& csvData, CsvImportMode mode);
+
     OperationResult exportBooks(const std::string& filePath);
     CsvImportResult importBooks(const std::string& filePath, CsvImportMode mode);
 

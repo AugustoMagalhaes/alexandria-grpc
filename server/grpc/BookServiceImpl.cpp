@@ -3,8 +3,9 @@
 #include "grpc/AuthGuard.h"
 #include "grpc/ProtoConverters.h"
 
-BookServiceImpl::BookServiceImpl(BookService& bookService, AuthService& authService)
+BookServiceImpl::BookServiceImpl(BookService& bookService, CsvService& csvService, AuthService& authService)
     : m_bookService(bookService)
+    , m_csvService(csvService)
     , m_authService(authService)
 {
 }
@@ -89,5 +90,37 @@ grpc::Status BookServiceImpl::DeleteBook(grpc::ServerContext* context, const ale
     }
 
     response->set_success(true);
+    return grpc::Status::OK;
+}
+
+grpc::Status BookServiceImpl::ExportBooks(grpc::ServerContext* context, const alexandria::v1::ExportBooksRequest*, alexandria::v1::ExportBooksResponse* response)
+{
+    auto authStatus = auth_guard::requireRole(context, m_authService, Role::Admin, nullptr);
+    if (!authStatus.ok()) {
+        return authStatus;
+    }
+
+    response->set_csv_data(m_csvService.exportBooksToString());
+    return grpc::Status::OK;
+}
+
+grpc::Status BookServiceImpl::ImportBooks(grpc::ServerContext* context, const alexandria::v1::ImportBooksRequest* request, alexandria::v1::ImportBooksResponse* response)
+{
+    auto authStatus = auth_guard::requireRole(context, m_authService, Role::Admin, nullptr);
+    if (!authStatus.ok()) {
+        return authStatus;
+    }
+
+    const CsvImportMode mode = request->mode() == alexandria::v1::CSV_IMPORT_MODE_REPLACE
+                                   ? CsvImportMode::Replace
+                                   : CsvImportMode::Append;
+
+    auto result = m_csvService.importBooksFromString(request->csv_data(), mode);
+
+    response->set_success(result.success);
+    response->set_error(result.error);
+    response->set_imported_count(result.importedCount);
+    response->set_skipped_count(result.skippedCount);
+
     return grpc::Status::OK;
 }

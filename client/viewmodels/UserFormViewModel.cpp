@@ -2,7 +2,7 @@
 
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
-
+#include <QDebug>
 #include "viewmodels/Session.h"
 
 UserFormViewModel::UserFormViewModel(QObject* parent)
@@ -83,6 +83,7 @@ void UserFormViewModel::reset()
 
 void UserFormViewModel::save()
 {
+    qDebug() << "UserForm::save start, busy=" << m_busy;
     setBusy(true);
     setErrorMessage(QString());
 
@@ -94,6 +95,7 @@ void UserFormViewModel::save()
     auto* watcher = new QFutureWatcher<ClientResult<User>>(this);
 
     QObject::connect(watcher, &QFutureWatcher<ClientResult<User>>::finished, this, [this, watcher]() {
+        qDebug() << "UserForm::save finished callback fired";
         auto result = watcher->result();
         watcher->deleteLater();
 

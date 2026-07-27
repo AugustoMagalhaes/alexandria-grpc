@@ -11,6 +11,8 @@ ApplicationWindow {
     visible: true
     title: qsTr("Alexandria")
 
+    property bool showAdminPanel: false
+
     ServerSetupPage {
         anchors.fill: parent
         visible: !Session.serverConfigured
@@ -23,6 +25,22 @@ ApplicationWindow {
 
     BookListPage {
         anchors.fill: parent
-        visible: Session.serverConfigured && Session.authenticated
+        visible: Session.serverConfigured && Session.authenticated && !window.showAdminPanel
+        onAdminPanelRequested: window.showAdminPanel = true
+    }
+
+    AdminPanelPage {
+        anchors.fill: parent
+        visible: Session.serverConfigured && Session.authenticated && window.showAdminPanel
+        onBackRequested: window.showAdminPanel = false
+    }
+
+    Connections {
+        target: Session
+        function onAuthenticationChanged() {
+            if (!Session.authenticated) {
+                window.showAdminPanel = false
+            }
+        }
     }
 }

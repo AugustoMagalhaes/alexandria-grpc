@@ -6,6 +6,7 @@ import Alexandria
 
 Item {
     id: page
+
     signal backRequested()
 
     UserListViewModel {
@@ -47,84 +48,113 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: "#f0f0f0"
+        color: Theme.backgroundColor
     }
 
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-        RowLayout {
+        Rectangle {
             Layout.fillWidth: true
-            Layout.margins: 12
+            Layout.preferredHeight: 64
+            color: Theme.surfaceColor
+            border.color: Theme.borderColor
+            border.width: 1
 
-            Label {
-                text: qsTr("User Management")
-                font.pixelSize: 18
-                font.bold: true
-            }
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Theme.spacingMedium
+                anchors.rightMargin: Theme.spacingMedium
+                spacing: Theme.spacingSmall
 
-            Item {
-                Layout.fillWidth: true
-            }
-
-            Button {
-                text: qsTr("Export CSV")
-                onClicked: exportDialog.open()
-            }
-
-            Button {
-                text: qsTr("Import CSV")
-                onClicked: {
-                    csvImportDialog.resetForm()
-                    csvImportDialog.open()
+                Label {
+                    text: qsTr("User Management")
+                    font.pixelSize: Theme.fontSizeTitle
+                    font.bold: true
+                    color: Theme.textPrimary
                 }
-            }
 
-            Button {
-                text: qsTr("Add User")
-                onClicked: userFormDialog.openForCreate()
-            }
+                Item {
+                    Layout.fillWidth: true
+                }
 
-            Button {
-                text: qsTr("Back to Books")
-                onClicked: page.backRequested()
+                AppButton {
+                    text: qsTr("Export CSV")
+                    onClicked: exportDialog.open()
+                }
+
+                AppButton {
+                    text: qsTr("Import CSV")
+                    onClicked: {
+                        csvImportDialog.resetForm()
+                        csvImportDialog.open()
+                    }
+                }
+
+                AppButton {
+                    text: qsTr("Add User")
+                    primary: true
+                    onClicked: userFormDialog.openForCreate()
+                }
+
+                AppButton {
+                    text: qsTr("Back to Books")
+                    onClicked: page.backRequested()
+                }
             }
         }
 
         Label {
             text: csvExportModel.statusMessage
-            color: csvExportModel.statusIsError ? "red" : "green"
+            color: csvExportModel.statusIsError ? Theme.errorColor : Theme.successColor
             visible: csvExportModel.statusMessage.length > 0
-            Layout.leftMargin: 12
-            Layout.bottomMargin: 8
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.topMargin: Theme.spacingSmall
+            Layout.bottomMargin: Theme.spacingSmall
         }
 
         ListView {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.rightMargin: Theme.spacingMedium
+            Layout.topMargin: Theme.spacingMedium
             model: viewModel.users
+            spacing: Theme.spacingSmall
             clip: true
 
-            delegate: ItemDelegate {
+            delegate: Rectangle {
                 width: ListView.view.width
-                height: 48
+                height: 56
+                radius: Theme.radiusSmall
+                color: Theme.surfaceColor
+                border.color: Theme.borderColor
+                border.width: 1
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: 8
+                    anchors.margins: Theme.spacingSmall
+                    spacing: Theme.spacingSmall
 
                     Label {
                         text: modelData.username
                         font.bold: true
-                        Layout.fillWidth: true
+                        font.pixelSize: Theme.fontSizeBody
+                        color: Theme.textPrimary
                     }
 
                     Label {
                         text: modelData.roleLabel
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.textSecondary
                     }
 
-                    Button {
+                    Item {
+                        Layout.fillWidth: true
+                    }
+
+                    AppButton {
                         text: qsTr("Delete")
                         onClicked: deleteDialog.openFor({ id: modelData.id, title: modelData.username })
                     }
@@ -136,12 +166,13 @@ Item {
     Label {
         anchors.centerIn: parent
         text: viewModel.errorMessage
-        color: "red"
+        color: Theme.errorColor
         visible: viewModel.errorMessage.length > 0
     }
 
     BusyIndicator {
         anchors.centerIn: parent
         running: viewModel.busy
+        visible: viewModel.busy
     }
 }

@@ -8,7 +8,14 @@ Dialog {
     modal: true
     anchors.centerIn: parent
     width: 360
-    title: formModel.isEditing ? qsTr("Edit Book") : qsTr("Add Book")
+    padding: 24
+
+    background: Rectangle {
+        color: Theme.surfaceColor
+        radius: Theme.radiusMedium
+        border.color: Theme.borderColor
+        border.width: 1
+    }
 
     property var bookSavedCallback: null
 
@@ -40,23 +47,30 @@ Dialog {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 12
+        spacing: 16
 
-        TextField {
+        Label {
+            text: formModel.isEditing ? qsTr("Edit Book") : qsTr("Add Book")
+            font.pixelSize: Theme.fontSizeTitle
+            font.bold: true
+            color: Theme.textPrimary
+        }
+
+        AppTextField {
             placeholderText: qsTr("Title")
             text: formModel.title
             onTextChanged: formModel.title = text
             Layout.fillWidth: true
         }
 
-        TextField {
+        AppTextField {
             placeholderText: qsTr("Author")
             text: formModel.author
             onTextChanged: formModel.author = text
             Layout.fillWidth: true
         }
 
-        TextField {
+        AppTextField {
             placeholderText: qsTr("ISBN")
             text: formModel.isbn
             onTextChanged: formModel.isbn = text
@@ -65,12 +79,14 @@ Dialog {
 
         RowLayout {
             Layout.fillWidth: true
+            spacing: 8
 
             Label {
                 text: qsTr("Total copies")
+                color: Theme.textPrimary
             }
 
-            SpinBox {
+            AppSpinBox {
                 from: 1
                 to: 9999
                 value: formModel.totalCopies
@@ -86,13 +102,15 @@ Dialog {
 
         RowLayout {
             Layout.fillWidth: true
+            spacing: 8
             visible: formModel.isEditing
 
             Label {
                 text: qsTr("Available copies")
+                color: Theme.textPrimary
             }
 
-            SpinBox {
+            AppSpinBox {
                 from: 0
                 to: formModel.totalCopies
                 value: formModel.availableCopies
@@ -103,7 +121,7 @@ Dialog {
 
         Label {
             text: formModel.errorMessage
-            color: "red"
+            color: Theme.errorColor
             wrapMode: Text.WordWrap
             visible: formModel.errorMessage.length > 0
             Layout.fillWidth: true
@@ -112,22 +130,30 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
+            spacing: 8
 
-            Button {
+            AppButton {
                 text: qsTr("Cancel")
                 onClicked: dialog.close()
             }
 
-            Button {
+            AppButton {
                 text: qsTr("Save")
+                primary: true
                 enabled: formModel.title.length > 0 && formModel.author.length > 0 && formModel.isbn.length > 0 && !formModel.busy
                 onClicked: formModel.save()
             }
         }
 
-        BusyIndicator {
-            running: formModel.busy
-            Layout.alignment: Qt.AlignHCenter
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 32
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: formModel.busy
+                visible: formModel.busy
+            }
         }
     }
 }

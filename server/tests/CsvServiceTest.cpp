@@ -167,3 +167,29 @@ TEST_F(CsvServiceTest, ExportFailsWhenPathIsInvalid)
 
     EXPECT_FALSE(result.success);
 }
+
+TEST_F(CsvServiceTest, ExportToStringMatchesFileExport)
+{
+    Book book;
+    book.title = "Clean Code";
+    book.author = "Robert Martin";
+    book.isbn = "9780132350884";
+    book.totalCopies = 3;
+    book.availableCopies = 3;
+    repository->create(book);
+
+    std::string csv = service->exportBooksToString();
+
+    EXPECT_EQ(csv, "title,author,isbn,total_copies\nClean Code,Robert Martin,9780132350884,3\n");
+}
+
+TEST_F(CsvServiceTest, ImportFromStringAppendsBooks)
+{
+    std::string csv = "title,author,isbn,total_copies\nClean Code,Robert Martin,9780132350884,3\n";
+
+    auto result = service->importBooksFromString(csv, CsvImportMode::Append);
+
+    ASSERT_TRUE(result.success);
+    EXPECT_EQ(result.importedCount, 1);
+    EXPECT_EQ(repository->findAll("").size(), 1u);
+}

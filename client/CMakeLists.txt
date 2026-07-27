@@ -12,6 +12,8 @@ qt_add_executable(alexandria_client
 qt_add_qml_module(alexandria_client
     URI Alexandria
     QML_FILES
+        qml/Theme.qml
+        qml/AppButton.qml
         qml/Main.qml
         qml/LoginPage.qml
         qml/BookListPage.qml

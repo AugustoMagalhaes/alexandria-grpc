@@ -112,6 +112,11 @@ CsvImportResult CsvService::importBooksFromString(const std::string& csvData, Cs
             continue;
         }
 
+        if (fields[0].empty() || fields[1].empty() || fields[2].empty()) {
+            ++result.skippedCount;
+            continue;
+        }
+
         Book book;
         book.title = fields[0];
         book.author = fields[1];

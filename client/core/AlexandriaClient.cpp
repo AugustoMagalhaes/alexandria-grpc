@@ -286,7 +286,7 @@ ClientResult<std::string> AlexandriaClient::exportBooksCsv()
     return ClientResult<std::string>::ok(response.csv_data());
 }
 
-ClientResult<void> AlexandriaClient::importBooksCsv(const std::string& csvData, bool replace)
+ClientResult<CsvImportSummary> AlexandriaClient::importBooksCsv(const std::string& csvData, bool replace)
 {
     alexandria::v1::ImportBooksRequest request;
     request.set_csv_data(csvData);
@@ -299,12 +299,15 @@ ClientResult<void> AlexandriaClient::importBooksCsv(const std::string& csvData, 
     grpc::Status status = m_bookStub->ImportBooks(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<void>::fail(status.error_message());
+        return ClientResult<CsvImportSummary>::fail(status.error_message());
     }
 
     if (!response.success()) {
-        return ClientResult<void>::fail(response.error());
+        return ClientResult<CsvImportSummary>::fail(response.error());
     }
 
-    return ClientResult<void>::ok();
+    CsvImportSummary summary;
+    summary.importedCount = response.imported_count();
+    summary.skippedCount = response.skipped_count();
+    return ClientResult<CsvImportSummary>::ok(summary);
 }

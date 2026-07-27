@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QtConcurrent/QtConcurrent>
 
+#include "core/AlexandriaClient.h"
 #include "viewmodels/Session.h"
 
 CsvViewModel::CsvViewModel(QObject* parent)
@@ -101,9 +102,9 @@ void CsvViewModel::importFromFile(const QString& filePath, bool replace)
 
     AlexandriaClient& client = Session::instance()->client();
 
-    auto* watcher = new QFutureWatcher<ClientResult<void>>(this);
+    auto* watcher = new QFutureWatcher<ClientResult<CsvImportSummary>>(this);
 
-    QObject::connect(watcher, &QFutureWatcher<ClientResult<void>>::finished, this, [this, watcher]() {
+    QObject::connect(watcher, &QFutureWatcher<ClientResult<CsvImportSummary>>::finished, this, [this, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -114,11 +115,20 @@ void CsvViewModel::importFromFile(const QString& filePath, bool replace)
             return;
         }
 
-        setStatus(tr("Books imported successfully"), false);
+        const auto& summary = *result.value;
+
+        if (summary.skippedCount > 0) {
+            setStatus(tr("Imported %1 book(s), %2 row(s) skipped due to errors")
+                          .arg(summary.importedCount)
+                          .arg(summary.skippedCount), false);
+        } else {
+            setStatus(tr("Imported %1 book(s) successfully").arg(summary.importedCount), false);
+        }
+
         emit importFinished();
     });
 
-    QFuture<ClientResult<void>> future = QtConcurrent::run([&client, csvData, replace]() {
+    QFuture<ClientResult<CsvImportSummary>> future = QtConcurrent::run([&client, csvData, replace]() {
         return client.importBooksCsv(csvData, replace);
     });
 

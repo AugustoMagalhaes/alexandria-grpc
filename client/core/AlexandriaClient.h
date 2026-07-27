@@ -15,6 +15,11 @@
 #include "domain/Book.h"
 #include "domain/User.h"
 
+struct CsvImportSummary {
+    int importedCount = 0;
+    int skippedCount = 0;
+};
+
 class AlexandriaClient {
 public:
     explicit AlexandriaClient(const std::string& serverAddress);
@@ -35,7 +40,7 @@ public:
     ClientResult<void> deleteUser(int id);
     ClientResult<void> checkConnection(int timeoutMs);
     ClientResult<std::string> exportBooksCsv();
-    ClientResult<void> importBooksCsv(const std::string& csvData, bool replace);
+    ClientResult<CsvImportSummary> importBooksCsv(const std::string& csvData, bool replace);
 
 private:
     std::shared_ptr<grpc::Channel> m_channel;

@@ -193,3 +193,14 @@ TEST_F(CsvServiceTest, ImportFromStringAppendsBooks)
     EXPECT_EQ(result.importedCount, 1);
     EXPECT_EQ(repository->findAll("").size(), 1u);
 }
+
+TEST_F(CsvServiceTest, ImportSkipsRowsWithEmptyRequiredFields)
+{
+    std::string csv = "title,author,isbn,total_copies\nValid Book,Author,123,2\nNo Author,,456,1\n";
+
+    auto result = service->importBooksFromString(csv, CsvImportMode::Append);
+
+    ASSERT_TRUE(result.success);
+    EXPECT_EQ(result.importedCount, 1);
+    EXPECT_EQ(result.skippedCount, 1);
+}

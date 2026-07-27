@@ -9,7 +9,13 @@ Dialog {
     anchors.centerIn: parent
     width: 340
     padding: 24
-    title: qsTr("Add User")
+
+    background: Rectangle {
+        color: Theme.surfaceColor
+        radius: Theme.radiusMedium
+        border.color: Theme.borderColor
+        border.width: 1
+    }
 
     property var userSavedCallback: null
 
@@ -31,16 +37,23 @@ Dialog {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 12
+        spacing: 16
 
-        TextField {
+        Label {
+            text: qsTr("Add User")
+            font.pixelSize: Theme.fontSizeTitle
+            font.bold: true
+            color: Theme.textPrimary
+        }
+
+        AppTextField {
             placeholderText: qsTr("Username")
             text: formModel.username
             onTextChanged: formModel.username = text
             Layout.fillWidth: true
         }
 
-        TextField {
+        AppTextField {
             placeholderText: qsTr("Password (min. 6 characters)")
             text: formModel.password
             echoMode: TextInput.Password
@@ -48,7 +61,7 @@ Dialog {
             Layout.fillWidth: true
         }
 
-        CheckBox {
+        AppCheckBox {
             text: qsTr("Administrator")
             checked: formModel.isAdmin
             onCheckedChanged: formModel.isAdmin = checked
@@ -56,7 +69,7 @@ Dialog {
 
         Label {
             text: formModel.errorMessage
-            color: "red"
+            color: Theme.errorColor
             wrapMode: Text.WordWrap
             visible: formModel.errorMessage.length > 0
             Layout.fillWidth: true
@@ -65,14 +78,16 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
+            spacing: 8
 
-            Button {
+            AppButton {
                 text: qsTr("Cancel")
                 onClicked: dialog.close()
             }
 
-            Button {
+            AppButton {
                 text: qsTr("Save")
+                primary: true
                 enabled: formModel.username.length > 0 && formModel.password.length >= 6 && !formModel.busy
                 onClicked: formModel.save()
             }
@@ -80,7 +95,7 @@ Dialog {
 
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: 20
+            Layout.preferredHeight: 32
 
             BusyIndicator {
                 anchors.centerIn: parent

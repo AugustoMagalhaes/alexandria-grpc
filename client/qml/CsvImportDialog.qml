@@ -8,8 +8,15 @@ Dialog {
     id: dialog
     modal: true
     anchors.centerIn: parent
-    width: 360
-    title: qsTr("Import Books from CSV")
+    width: 380
+    padding: 24
+
+    background: Rectangle {
+        color: Theme.surfaceColor
+        radius: Theme.radiusMedium
+        border.color: Theme.borderColor
+        border.width: 1
+    }
 
     property var importFinishedCallback: null
 
@@ -39,34 +46,38 @@ Dialog {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 12
+        spacing: 16
+
+        Label {
+            text: qsTr("Import Books from CSV")
+            font.pixelSize: Theme.fontSizeTitle
+            font.bold: true
+            color: Theme.textPrimary
+        }
 
         Label {
             text: dialog.selectedFilePath.length > 0 ? dialog.selectedFilePath : qsTr("No file selected")
+            color: Theme.textSecondary
             wrapMode: Text.WrapAnywhere
             Layout.fillWidth: true
         }
 
-        Button {
+        AppButton {
             text: qsTr("Choose File…")
             onClicked: fileDialog.open()
             Layout.fillWidth: true
         }
 
-        RowLayout {
-            Layout.fillWidth: true
+        ColumnLayout {
+            spacing: 4
 
-            RadioButton {
+            AppRadioButton {
                 text: qsTr("Append to existing books")
                 checked: !dialog.replaceExisting
                 onCheckedChanged: if (checked) dialog.replaceExisting = false
             }
-        }
 
-        RowLayout {
-            Layout.fillWidth: true
-
-            RadioButton {
+            AppRadioButton {
                 text: qsTr("Replace all books")
                 checked: dialog.replaceExisting
                 onCheckedChanged: if (checked) dialog.replaceExisting = true
@@ -75,7 +86,7 @@ Dialog {
 
         Label {
             text: csvModel.statusMessage
-            color: csvModel.statusIsError ? "red" : "green"
+            color: csvModel.statusIsError ? Theme.errorColor : Theme.successColor
             wrapMode: Text.WordWrap
             visible: csvModel.statusMessage.length > 0
             Layout.fillWidth: true
@@ -84,22 +95,30 @@ Dialog {
         RowLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignRight
+            spacing: 8
 
-            Button {
+            AppButton {
                 text: qsTr("Close")
                 onClicked: dialog.close()
             }
 
-            Button {
+            AppButton {
                 text: qsTr("Import")
+                primary: true
                 enabled: dialog.selectedFilePath.length > 0 && !csvModel.busy
                 onClicked: csvModel.importFromFile(dialog.selectedFilePath, dialog.replaceExisting)
             }
         }
 
-        BusyIndicator {
-            running: csvModel.busy
-            Layout.alignment: Qt.AlignHCenter
+        Item {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 32
+
+            BusyIndicator {
+                anchors.centerIn: parent
+                running: csvModel.busy
+                visible: csvModel.busy
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ import Alexandria
 
 Item {
     id: page
+
     signal adminPanelRequested()
 
     BookListViewModel {
@@ -29,58 +30,70 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: "#f0f0f0"
+        color: Theme.backgroundColor
     }
 
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-        RowLayout {
+        Rectangle {
             Layout.fillWidth: true
-            Layout.margins: 12
+            Layout.preferredHeight: 64
+            color: Theme.surfaceColor
+            border.color: Theme.borderColor
+            border.width: 1
 
-            Label {
-                text: Session.isAdmin ? qsTr("Books (Administrator)") : qsTr("Books")
-                font.pixelSize: 18
-                font.bold: true
-            }
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Theme.spacingMedium
+                anchors.rightMargin: Theme.spacingMedium
+                spacing: Theme.spacingSmall
 
-            Item {
-                Layout.fillWidth: true
-            }
+                Label {
+                    text: Session.isAdmin ? qsTr("Books (Administrator)") : qsTr("Books")
+                    font.pixelSize: Theme.fontSizeTitle
+                    font.bold: true
+                    color: Theme.textPrimary
+                }
 
-            Button {
-                text: qsTr("Manage Users")
-                visible: Session.isAdmin
-                onClicked: page.adminPanelRequested()
-            }
+                Item {
+                    Layout.fillWidth: true
+                }
 
-            Button {
-                text: qsTr("Change server")
-                onClicked: Session.requestServerChange()
-            }
+                AppButton {
+                    text: qsTr("Manage Users")
+                    visible: Session.isAdmin
+                    onClicked: page.adminPanelRequested()
+                }
 
-            Button {
-                text: qsTr("Log out")
-                onClicked: Session.logout()
+                AppButton {
+                    text: qsTr("Change server")
+                    onClicked: Session.requestServerChange()
+                }
+
+                AppButton {
+                    text: qsTr("Log out")
+                    onClicked: Session.logout()
+                }
             }
         }
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.margins: 12
-            spacing: 8
+            Layout.margins: Theme.spacingMedium
+            spacing: Theme.spacingSmall
 
-            TextField {
+            AppTextField {
                 id: searchField
                 placeholderText: qsTr("Search by title or author")
                 Layout.fillWidth: true
                 onTextChanged: viewModel.refresh(text)
             }
 
-            Button {
+            AppButton {
                 text: qsTr("Add Book")
+                primary: true
                 visible: Session.isAdmin
                 onClicked: formDialog.openForCreate()
             }
@@ -89,39 +102,53 @@ Item {
         ListView {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.rightMargin: Theme.spacingMedium
             model: viewModel.books
+            spacing: Theme.spacingSmall
             clip: true
 
-            delegate: ItemDelegate {
+            delegate: Rectangle {
                 width: ListView.view.width
-                height: 56
+                height: 64
+                radius: Theme.radiusSmall
+                color: Theme.surfaceColor
+                border.color: Theme.borderColor
+                border.width: 1
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: 8
+                    anchors.margins: Theme.spacingSmall
+                    spacing: Theme.spacingSmall
 
                     ColumnLayout {
-                        Layout.fillWidth: true
                         spacing: 2
 
                         Label {
                             text: modelData.title
                             font.bold: true
+                            font.pixelSize: Theme.fontSizeBody
+                            color: Theme.textPrimary
                         }
 
                         Label {
                             text: modelData.author + " · " + modelData.availableCopies + "/" + modelData.totalCopies + qsTr(" available")
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.textSecondary
                         }
                     }
 
-                    Button {
+                    Item {
+                        Layout.fillWidth: true
+                    }
+
+                    AppButton {
                         text: qsTr("Edit")
                         visible: Session.isAdmin
                         onClicked: formDialog.openForEdit(modelData)
                     }
 
-                    Button {
+                    AppButton {
                         text: qsTr("Delete")
                         visible: Session.isAdmin
                         onClicked: deleteDialog.openFor(modelData)
@@ -134,12 +161,13 @@ Item {
     Label {
         anchors.centerIn: parent
         text: viewModel.errorMessage
-        color: "red"
+        color: Theme.errorColor
         visible: viewModel.errorMessage.length > 0
     }
 
     BusyIndicator {
         anchors.centerIn: parent
         running: viewModel.busy
+        visible: viewModel.busy
     }
 }

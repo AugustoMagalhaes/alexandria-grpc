@@ -70,50 +70,37 @@ CsvService::CsvService(IBookRepository& repository)
 {
 }
 
-OperationResult CsvService::exportBooks(const std::string& filePath)
+std::string CsvService::exportBooksToString()
 {
-    std::ofstream file(filePath);
-
-    if (!file.is_open()) {
-        return OperationResult::fail("Could not open file for writing");
-    }
-
-    file << "title,author,isbn,total_copies\n";
+    std::ostringstream stream;
+    stream << "title,author,isbn,total_copies\n";
 
     for (const Book& book : m_repository.findAll("")) {
-        file << escapeCsvField(book.title) << ","
-             << escapeCsvField(book.author) << ","
-             << escapeCsvField(book.isbn) << ","
-             << book.totalCopies << "\n";
+        stream << escapeCsvField(book.title) << ","
+               << escapeCsvField(book.author) << ","
+               << escapeCsvField(book.isbn) << ","
+               << book.totalCopies << "\n";
     }
 
-    return OperationResult::ok();
+    return stream.str();
 }
 
-CsvImportResult CsvService::importBooks(const std::string& filePath, CsvImportMode mode)
+CsvImportResult CsvService::importBooksFromString(const std::string& csvData, CsvImportMode mode)
 {
-    std::ifstream file(filePath);
-
-    if (!file.is_open()) {
-        CsvImportResult result;
-        result.success = false;
-        result.error = "Could not open file for reading";
-        return result;
-    }
-
     if (mode == CsvImportMode::Replace) {
         for (const Book& book : m_repository.findAll("")) {
             m_repository.remove(book.id);
         }
     }
 
+    std::istringstream stream(csvData);
     std::string line;
-    std::getline(file, line);
+    std::getline(stream, line);
 
     CsvImportResult result;
     result.success = true;
 
-    while (std::getline(file, line)) {
+    while (std::getline(stream, line)) {
         if (line.empty()) {
             continue;
         }
@@ -147,4 +134,33 @@ CsvImportResult CsvService::importBooks(const std::string& filePath, CsvImportMo
     }
 
     return result;
+}
+
+OperationResult CsvService::exportBooks(const std::string& filePath)
+{
+    std::ofstream file(filePath);
+
+    if (!file.is_open()) {
+        return OperationResult::fail("Could not open file for writing");
+    }
+
+    file << exportBooksToString();
+    return OperationResult::ok();
+}
+
+CsvImportResult CsvService::importBooks(const std::string& filePath, CsvImportMode mode)
+{
+    std::ifstream file(filePath);
+
+    if (!file.is_open()) {
+        CsvImportResult result;
+        result.success = false;
+        result.error = "Could not open file for reading";
+        return result;
+    }
+
+    std::ostringstream buffer;
+    buffer << file.rdbuf();
+
+    return importBooksFromString(buffer.str(), mode);
 }

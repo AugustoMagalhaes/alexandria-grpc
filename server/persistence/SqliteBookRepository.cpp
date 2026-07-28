@@ -12,6 +12,10 @@ Book bookFromQuery(const QSqlQuery& query)
     book.title = query.value("title").toString().toStdString();
     book.author = query.value("author").toString().toStdString();
     book.isbn = query.value("isbn").toString().toStdString();
+    book.schoolCode = query.value("school_code").toString().toStdString();
+    book.category = query.value("category").toString().toStdString();
+    book.keywords = query.value("keywords").toString().toStdString();
+    book.borrowable = query.value("borrowable").toInt() != 0;
     book.totalCopies = query.value("total_copies").toInt();
     book.availableCopies = query.value("available_copies").toInt();
     return book;
@@ -30,12 +34,16 @@ std::optional<Book> SqliteBookRepository::create(const Book& book)
 
     QSqlQuery query(m_database.handle());
     query.prepare(
-        "INSERT INTO books (title, author, isbn, total_copies, available_copies) "
-        "VALUES (:title, :author, :isbn, :total_copies, :available_copies)"
+        "INSERT INTO books (title, author, isbn, school_code, category, keywords, borrowable, total_copies, available_copies) "
+        "VALUES (:title, :author, :isbn, :school_code, :category, :keywords, :borrowable, :total_copies, :available_copies)"
         );
     query.bindValue(":title", QString::fromStdString(book.title));
     query.bindValue(":author", QString::fromStdString(book.author));
     query.bindValue(":isbn", QString::fromStdString(book.isbn));
+    query.bindValue(":school_code", QString::fromStdString(book.schoolCode));
+    query.bindValue(":category", QString::fromStdString(book.category));
+    query.bindValue(":keywords", QString::fromStdString(book.keywords));
+    query.bindValue(":borrowable", book.borrowable ? 1 : 0);
     query.bindValue(":total_copies", book.totalCopies);
     query.bindValue(":available_copies", book.availableCopies);
 
@@ -97,7 +105,11 @@ std::vector<Book> SqliteBookRepository::findAll(const std::string& search)
     } else {
         query.prepare(
             "SELECT * FROM books "
-            "WHERE title LIKE :search OR author LIKE :search "
+            "WHERE title LIKE :search "
+            "OR author LIKE :search "
+            "OR category LIKE :search "
+            "OR school_code LIKE :search "
+            "OR keywords LIKE :search "
             "ORDER BY title"
             );
         query.bindValue(":search", "%" + QString::fromStdString(search) + "%");
@@ -123,12 +135,17 @@ bool SqliteBookRepository::update(const Book& book)
     QSqlQuery query(m_database.handle());
     query.prepare(
         "UPDATE books SET title = :title, author = :author, isbn = :isbn, "
-        "total_copies = :total_copies, available_copies = :available_copies "
+        "school_code = :school_code, category = :category, keywords = :keywords, "
+        "borrowable = :borrowable, total_copies = :total_copies, available_copies = :available_copies "
         "WHERE id = :id"
         );
     query.bindValue(":title", QString::fromStdString(book.title));
     query.bindValue(":author", QString::fromStdString(book.author));
     query.bindValue(":isbn", QString::fromStdString(book.isbn));
+    query.bindValue(":school_code", QString::fromStdString(book.schoolCode));
+    query.bindValue(":category", QString::fromStdString(book.category));
+    query.bindValue(":keywords", QString::fromStdString(book.keywords));
+    query.bindValue(":borrowable", book.borrowable ? 1 : 0);
     query.bindValue(":total_copies", book.totalCopies);
     query.bindValue(":available_copies", book.availableCopies);
     query.bindValue(":id", book.id);

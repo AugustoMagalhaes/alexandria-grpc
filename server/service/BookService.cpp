@@ -7,11 +7,23 @@ BookService::BookService(IBookRepository& repository)
 
 bool BookService::isbnAlreadyRegistered(const std::string& isbn, int excludeId)
 {
+    if (isbn.empty()) {
+        return false;
+    }
+
     auto existing = m_repository.findByIsbn(isbn);
     return existing.has_value() && existing->id != excludeId;
 }
 
-ServiceResult<Book> BookService::createBook(const std::string& title, const std::string& author, const std::string& isbn, int totalCopies)
+ServiceResult<Book> BookService::createBook(
+    const std::string& title,
+    const std::string& author,
+    const std::string& isbn,
+    int totalCopies,
+    const std::string& schoolCode,
+    const std::string& category,
+    const std::string& keywords,
+    bool borrowable)
 {
     if (title.empty()) {
         return ServiceResult<Book>::fail("Title is required");
@@ -19,10 +31,6 @@ ServiceResult<Book> BookService::createBook(const std::string& title, const std:
 
     if (author.empty()) {
         return ServiceResult<Book>::fail("Author is required");
-    }
-
-    if (isbn.empty()) {
-        return ServiceResult<Book>::fail("ISBN is required");
     }
 
     if (totalCopies < 1) {
@@ -37,6 +45,10 @@ ServiceResult<Book> BookService::createBook(const std::string& title, const std:
     book.title = title;
     book.author = author;
     book.isbn = isbn;
+    book.schoolCode = schoolCode;
+    book.category = category;
+    book.keywords = keywords;
+    book.borrowable = borrowable;
     book.totalCopies = totalCopies;
     book.availableCopies = totalCopies;
 
@@ -61,8 +73,8 @@ std::vector<Book> BookService::listBooks(const std::string& search)
 
 OperationResult BookService::updateBook(const Book& book)
 {
-    if (book.title.empty() || book.author.empty() || book.isbn.empty()) {
-        return OperationResult::fail("Title, author and ISBN are required");
+    if (book.title.empty() || book.author.empty()) {
+        return OperationResult::fail("Title and author are required");
     }
 
     if (book.availableCopies < 0 || book.availableCopies > book.totalCopies) {

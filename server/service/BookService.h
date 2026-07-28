@@ -13,7 +13,16 @@ class BookService {
 public:
     explicit BookService(IBookRepository& repository);
 
-    ServiceResult<Book> createBook(const std::string& title, const std::string& author, const std::string& isbn, int totalCopies);
+    ServiceResult<Book> createBook(
+        const std::string& title,
+        const std::string& author,
+        const std::string& isbn,
+        int totalCopies,
+        const std::string& schoolCode = "",
+        const std::string& category = "",
+        const std::string& keywords = "",
+        bool borrowable = true
+        );
     std::optional<Book> getBook(int id);
     std::vector<Book> listBooks(const std::string& search);
     OperationResult updateBook(const Book& book);

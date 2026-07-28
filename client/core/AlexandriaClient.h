@@ -36,7 +36,17 @@ public:
     void setToken(const std::string& token);
     std::string token() const;
 
-    ClientResult<Book> createBook(const std::string& title, const std::string& author, const std::string& isbn, int totalCopies);
+    ClientResult<Book> createBook(
+        const std::string& title,
+        const std::string& author,
+        const std::string& isbn,
+        int totalCopies,
+        const std::string& schoolCode = "",
+        const std::string& category = "",
+        const std::string& keywords = "",
+        bool borrowable = true
+    );
+
     ClientResult<Book> getBook(int id);
     ClientResult<std::vector<Book>> listBooks(const std::string& search);
     ClientResult<void> updateBook(const Book& book);

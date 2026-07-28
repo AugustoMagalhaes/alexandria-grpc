@@ -11,6 +11,7 @@ Session::Session(QObject* parent)
 {
     QSettings settings;
     m_serverAddress = settings.value("server/address").toString();
+    m_rememberMe = settings.value("session/rememberMe", false).toBool();
     m_client = std::make_unique<AlexandriaClient>(m_serverAddress.toStdString());
     s_instance = this;
 
@@ -69,6 +70,21 @@ QString Session::connectionError() const
     return m_connectionError;
 }
 
+bool Session::rememberMe() const
+{
+    return m_rememberMe;
+}
+
+void Session::setRememberMe(bool remember)
+{
+    if (m_rememberMe != remember) {
+        m_rememberMe = remember;
+        QSettings settings;
+        settings.setValue("session/rememberMe", remember);
+        emit rememberMeChanged();
+    }
+}
+
 void Session::setBusy(bool busy)
 {
     if (m_busy != busy) {
@@ -90,7 +106,9 @@ void Session::connectToServer(const QString& address)
 
     m_serverAddress = address;
     m_client = std::make_unique<AlexandriaClient>(address.toStdString());
+    m_authenticated = false;
     emit serverAddressChanged();
+    emit authenticationChanged();
 
     checkConnection();
 }
@@ -98,9 +116,24 @@ void Session::connectToServer(const QString& address)
 void Session::requestServerChange()
 {
     m_serverConfigured = false;
+    m_authenticated = false;
     m_connectionError.clear();
     emit serverConfiguredChanged();
     emit connectionStateChanged();
+    emit authenticationChanged();
+}
+
+void Session::handleConnectivityIssue()
+{
+    if (!m_serverConfigured) {
+        return;
+    }
+
+    m_authenticated = false;
+    emit authenticationChanged();
+
+    requestServerChange();
+    checkConnection();
 }
 
 void Session::checkConnection()
@@ -151,6 +184,10 @@ void Session::login(const QString& username, const QString& password)
         setBusy(false);
 
         if (!result.success) {
+            if (result.connectivityError) {
+                handleConnectivityIssue();
+                return;
+            }
             setErrorMessage(QString::fromStdString(result.error));
             return;
         }

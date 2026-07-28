@@ -35,7 +35,20 @@ User fromProto(const alexandria::v1::User& proto)
 
 bool isConnectivity(const grpc::Status& status)
 {
-    return status.error_code() == grpc::StatusCode::UNAVAILABLE;
+    if (status.error_code() == grpc::StatusCode::UNAVAILABLE) {
+        return true;
+    }
+
+    if (status.error_code() == grpc::StatusCode::UNKNOWN) {
+        const std::string& message = status.error_message();
+        if (message.find("Socket closed") != std::string::npos
+            || message.find("Connection refused") != std::string::npos
+            || message.find("transport") != std::string::npos) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 }

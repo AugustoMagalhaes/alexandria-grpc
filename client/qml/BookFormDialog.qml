@@ -5,6 +5,14 @@ import Alexandria
 
 Dialog {
     id: dialog
+    Connections {
+        target: Session
+        function onServerConfiguredChanged() {
+            if (!Session.serverConfigured && dialog.opened) {
+                dialog.close()
+            }
+        }
+    }
     modal: true
     anchors.centerIn: parent
     width: 360

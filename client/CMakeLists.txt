@@ -20,6 +20,10 @@ qt_add_executable(alexandria_client
     viewmodels/CsvViewModel.cpp
 )
 
+set_source_files_properties(qml/Theme.qml PROPERTIES
+    QT_QML_SINGLETON_TYPE true
+)
+
 qt_add_qml_module(alexandria_client
     URI Alexandria
     QML_FILES
@@ -44,10 +48,6 @@ qt_add_qml_module(alexandria_client
         viewmodels/UserListViewModel.h
         viewmodels/UserFormViewModel.h
         viewmodels/CsvViewModel.h
-)
-
-set_source_files_properties(qml/Theme.qml PROPERTIES
-    QT_QML_SINGLETON_TYPE true
 )
 
 target_include_directories(alexandria_client PRIVATE

@@ -26,10 +26,15 @@ public:
 
     static bool isConnectivityError(const grpc::Status& status);
 
+    ClientResult<void> checkConnection(int timeoutMs);
+
     ClientResult<Role> login(const std::string& username, const std::string& password);
+    ClientResult<Role> validateToken(const std::string& token);
     void logout();
     bool isAuthenticated() const;
     Role currentRole() const;
+    void setToken(const std::string& token);
+    std::string token() const;
 
     ClientResult<Book> createBook(const std::string& title, const std::string& author, const std::string& isbn, int totalCopies);
     ClientResult<Book> getBook(int id);
@@ -40,7 +45,7 @@ public:
     ClientResult<User> createUser(const std::string& username, const std::string& password, Role role);
     ClientResult<std::vector<User>> listUsers();
     ClientResult<void> deleteUser(int id);
-    ClientResult<void> checkConnection(int timeoutMs);
+
     ClientResult<std::string> exportBooksCsv();
     ClientResult<CsvImportSummary> importBooksCsv(const std::string& csvData, bool replace);
 

@@ -81,6 +81,9 @@ void Session::setRememberMe(bool remember)
         m_rememberMe = remember;
         QSettings settings;
         settings.setValue("session/rememberMe", remember);
+        if (!remember) {
+            clearSavedToken();
+        }
         emit rememberMeChanged();
     }
 }
@@ -97,6 +100,27 @@ void Session::setErrorMessage(const QString& message)
 {
     m_errorMessage = message;
     emit errorMessageChanged();
+}
+
+void Session::saveToken(const QString& token)
+{
+    if (!m_rememberMe) {
+        return;
+    }
+    QSettings settings;
+    settings.setValue("session/token", token);
+}
+
+QString Session::loadSavedToken() const
+{
+    QSettings settings;
+    return settings.value("session/token").toString();
+}
+
+void Session::clearSavedToken()
+{
+    QSettings settings;
+    settings.remove("session/token");
 }
 
 void Session::connectToServer(const QString& address)
@@ -160,11 +184,55 @@ void Session::checkConnection()
         m_serverConfigured = true;
         emit serverConfiguredChanged();
         emit connectionStateChanged();
+
+        tryAutoLogin();
     });
 
     AlexandriaClient* clientPtr = m_client.get();
     QFuture<ClientResult<void>> future = QtConcurrent::run([clientPtr]() {
         return clientPtr->checkConnection(3000);
+    });
+
+    watcher->setFuture(future);
+}
+
+void Session::tryAutoLogin()
+{
+    if (!m_rememberMe) {
+        return;
+    }
+
+    const QString savedToken = loadSavedToken();
+
+    if (savedToken.isEmpty()) {
+        return;
+    }
+
+    setBusy(true);
+
+    auto* watcher = new QFutureWatcher<ClientResult<Role>>(this);
+
+    QObject::connect(watcher, &QFutureWatcher<ClientResult<Role>>::finished, this, [this, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        setBusy(false);
+
+        if (!result.success) {
+            clearSavedToken();
+            return;
+        }
+
+        m_authenticated = true;
+        m_role = *result.value;
+        emit authenticationChanged();
+        emit loginSucceeded();
+    });
+
+    AlexandriaClient* clientPtr = m_client.get();
+    const std::string tokenStd = savedToken.toStdString();
+    QFuture<ClientResult<Role>> future = QtConcurrent::run([clientPtr, tokenStd]() {
+        return clientPtr->validateToken(tokenStd);
     });
 
     watcher->setFuture(future);
@@ -194,6 +262,9 @@ void Session::login(const QString& username, const QString& password)
 
         m_authenticated = true;
         m_role = *result.value;
+
+        saveToken(QString::fromStdString(m_client->token()));
+
         emit authenticationChanged();
         emit loginSucceeded();
     });
@@ -210,5 +281,6 @@ void Session::logout()
     m_client->logout();
     m_authenticated = false;
     m_role = Role::User;
+    clearSavedToken();
     emit authenticationChanged();
 }

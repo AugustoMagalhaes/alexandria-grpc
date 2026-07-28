@@ -44,6 +44,7 @@ public:
     Q_INVOKABLE void connectToServer(const QString& address);
     Q_INVOKABLE void requestServerChange();
     Q_INVOKABLE void handleConnectivityIssue();
+    Q_INVOKABLE void tryAutoLogin();
 
 signals:
     void authenticationChanged();
@@ -73,5 +74,7 @@ private:
     void setBusy(bool busy);
     void setErrorMessage(const QString& message);
     void checkConnection();
-    void handleAuthResult();
+    void saveToken(const QString& token);
+    QString loadSavedToken() const;
+    void clearSavedToken();
 };

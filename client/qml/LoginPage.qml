@@ -43,6 +43,12 @@ Item {
             Layout.fillWidth: true
         }
 
+        AppCheckBox {
+            text: qsTr("Remember me")
+            checked: Session.rememberMe
+            onCheckedChanged: Session.rememberMe = checked
+        }
+
         AppButton {
             text: qsTr("Log in")
             primary: true

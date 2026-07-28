@@ -333,3 +333,41 @@ ClientResult<CsvImportSummary> AlexandriaClient::importBooksCsv(const std::strin
     summary.skippedCount = response.skipped_count();
     return ClientResult<CsvImportSummary>::ok(summary);
 }
+
+ClientResult<Role> AlexandriaClient::validateToken(const std::string& token)
+{
+    {
+        std::lock_guard<std::mutex> lock(m_tokenMutex);
+        m_token = token;
+    }
+
+    alexandria::v1::ValidateTokenRequest request;
+    alexandria::v1::ValidateTokenResponse response;
+    grpc::ClientContext context;
+    attachToken(context);
+
+    grpc::Status status = m_authStub->ValidateToken(&context, request, &response);
+
+    if (!status.ok()) {
+        std::lock_guard<std::mutex> lock(m_tokenMutex);
+        m_token.clear();
+        return ClientResult<Role>::fail(status.error_message(), isConnectivity(status));
+    }
+
+    std::lock_guard<std::mutex> lock(m_tokenMutex);
+    m_role = fromProto(response.role());
+    m_authenticated = true;
+    return ClientResult<Role>::ok(m_role);
+}
+
+void AlexandriaClient::setToken(const std::string& token)
+{
+    std::lock_guard<std::mutex> lock(m_tokenMutex);
+    m_token = token;
+}
+
+std::string AlexandriaClient::token() const
+{
+    std::lock_guard<std::mutex> lock(m_tokenMutex);
+    return m_token;
+}

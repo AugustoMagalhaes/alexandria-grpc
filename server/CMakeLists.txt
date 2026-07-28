@@ -1,4 +1,4 @@
-find_package(PkgConfig REQUIRED)
+find_package(PkgConfig)
 
 add_library(alexandria_domain INTERFACE)
 target_include_directories(alexandria_domain INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -20,7 +20,13 @@ target_link_libraries(alexandria_persistence
         Qt6::Sql
 )
 
-pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
+if(WIN32)
+    find_package(unofficial-sodium CONFIG REQUIRED)
+    set(ALEXANDRIA_SODIUM_TARGET unofficial-sodium::sodium)
+else()
+    pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
+    set(ALEXANDRIA_SODIUM_TARGET PkgConfig::SODIUM)
+endif()
 
 add_library(alexandria_auth STATIC
     auth/PasswordHasher.cpp
@@ -33,7 +39,7 @@ target_include_directories(alexandria_auth PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(alexandria_auth
     PUBLIC
         alexandria_repository
-        PkgConfig::SODIUM
+        ${ALEXANDRIA_SODIUM_TARGET}
 )
 
 add_library(alexandria_service STATIC

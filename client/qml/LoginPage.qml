@@ -9,6 +9,16 @@ Item {
         color: Theme.backgroundColor
     }
 
+    Connections {
+        target: Session
+        function onAuthenticationChanged() {
+            if (!Session.authenticated) {
+                usernameField.text = ""
+                passwordField.text = ""
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         spacing: Theme.spacingMedium

@@ -12,6 +12,10 @@ class BookFormViewModel : public QObject {
     Q_PROPERTY(QString title READ title WRITE setTitle NOTIFY titleChanged)
     Q_PROPERTY(QString author READ author WRITE setAuthor NOTIFY authorChanged)
     Q_PROPERTY(QString isbn READ isbn WRITE setIsbn NOTIFY isbnChanged)
+    Q_PROPERTY(QString schoolCode READ schoolCode WRITE setSchoolCode NOTIFY schoolCodeChanged)
+    Q_PROPERTY(QString category READ category WRITE setCategory NOTIFY categoryChanged)
+    Q_PROPERTY(QString keywords READ keywords WRITE setKeywords NOTIFY keywordsChanged)
+    Q_PROPERTY(bool borrowable READ borrowable WRITE setBorrowable NOTIFY borrowableChanged)
     Q_PROPERTY(int totalCopies READ totalCopies WRITE setTotalCopies NOTIFY totalCopiesChanged)
     Q_PROPERTY(int availableCopies READ availableCopies WRITE setAvailableCopies NOTIFY availableCopiesChanged)
     Q_PROPERTY(bool busy READ isBusy NOTIFY busyChanged)
@@ -33,6 +37,18 @@ public:
     QString isbn() const;
     void setIsbn(const QString& isbn);
 
+    QString schoolCode() const;
+    void setSchoolCode(const QString& schoolCode);
+
+    QString category() const;
+    void setCategory(const QString& category);
+
+    QString keywords() const;
+    void setKeywords(const QString& keywords);
+
+    bool borrowable() const;
+    void setBorrowable(bool borrowable);
+
     int totalCopies() const;
     void setTotalCopies(int copies);
 
@@ -51,6 +67,10 @@ signals:
     void titleChanged();
     void authorChanged();
     void isbnChanged();
+    void schoolCodeChanged();
+    void categoryChanged();
+    void keywordsChanged();
+    void borrowableChanged();
     void totalCopiesChanged();
     void availableCopiesChanged();
     void busyChanged();
@@ -62,6 +82,10 @@ private:
     QString m_title;
     QString m_author;
     QString m_isbn;
+    QString m_schoolCode;
+    QString m_category;
+    QString m_keywords;
+    bool m_borrowable = true;
     int m_totalCopies = 1;
     int m_availableCopies = 1;
     bool m_busy = false;

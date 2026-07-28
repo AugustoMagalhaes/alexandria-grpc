@@ -27,6 +27,10 @@ inline alexandria::v1::Book toProto(const Book& book)
     proto.set_isbn(book.isbn);
     proto.set_total_copies(book.totalCopies);
     proto.set_available_copies(book.availableCopies);
+    proto.set_school_code(book.schoolCode);
+    proto.set_category(book.category);
+    proto.set_keywords(book.keywords);
+    proto.set_borrowable(book.borrowable);
     return proto;
 }
 
@@ -39,6 +43,10 @@ inline Book fromProto(const alexandria::v1::Book& proto)
     book.isbn = proto.isbn();
     book.totalCopies = proto.total_copies();
     book.availableCopies = proto.available_copies();
+    book.schoolCode = proto.school_code();
+    book.category = proto.category();
+    book.keywords = proto.keywords();
+    book.borrowable = proto.borrowable();
     return book;
 }
 

@@ -1,3 +1,26 @@
+#include "persistence/Database.h"
+
+#include <QSqlQuery>
+#include <QUuid>
+
+Database::Database(const QString& path)
+{
+    const QString connectionName = QUuid::createUuid().toString();
+    m_db = QSqlDatabase::addDatabase("QSQLITE", connectionName);
+    m_db.setDatabaseName(path);
+    m_db.open();
+}
+
+QSqlDatabase& Database::handle()
+{
+    return m_db;
+}
+
+std::mutex& Database::mutex()
+{
+    return m_mutex;
+}
+
 bool Database::migrate()
 {
     QSqlQuery query(m_db);

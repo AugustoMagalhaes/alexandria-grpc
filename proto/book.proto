@@ -9,6 +9,10 @@ message Book {
     string isbn = 4;
     int32 total_copies = 5;
     int32 available_copies = 6;
+    string school_code = 7;
+    string category = 8;
+    string keywords = 9;
+    bool borrowable = 10;
 }
 
 message CreateBookRequest {
@@ -16,6 +20,10 @@ message CreateBookRequest {
     string author = 2;
     string isbn = 3;
     int32 total_copies = 4;
+    string school_code = 5;
+    string category = 6;
+    string keywords = 7;
+    bool borrowable = 8;
 }
 
 message CreateBookResponse {

@@ -1,16 +1,23 @@
+add_library(alexandria_client_core STATIC
+    core/AlexandriaClient.cpp
+)
+
+target_include_directories(alexandria_client_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(alexandria_client_core
+    PUBLIC
+        alexandria_domain
+        alexandria_proto
+)
+
 qt_add_executable(alexandria_client
     main.cpp
-    core/AlexandriaClient.cpp
     viewmodels/Session.cpp
     viewmodels/BookListViewModel.cpp
     viewmodels/BookFormViewModel.cpp
     viewmodels/UserListViewModel.cpp
     viewmodels/UserFormViewModel.cpp
     viewmodels/CsvViewModel.cpp
-)
-
-set_source_files_properties(qml/Theme.qml PROPERTIES
-    QT_QML_SINGLETON_TYPE true
 )
 
 qt_add_qml_module(alexandria_client
@@ -39,6 +46,10 @@ qt_add_qml_module(alexandria_client
         viewmodels/CsvViewModel.h
 )
 
+set_source_files_properties(qml/Theme.qml PROPERTIES
+    QT_QML_SINGLETON_TYPE true
+)
+
 target_include_directories(alexandria_client PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/viewmodels
@@ -48,8 +59,7 @@ target_link_libraries(alexandria_client
     PRIVATE
         Qt6::Quick
         Qt6::Concurrent
-        alexandria_domain
-        alexandria_proto
+        alexandria_client_core
 )
 
 install(TARGETS alexandria_client
@@ -57,3 +67,7 @@ install(TARGETS alexandria_client
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()

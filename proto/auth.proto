@@ -14,6 +14,14 @@ message LoginResponse {
     Role role = 2;
 }
 
+message ValidateTokenRequest {
+}
+
+message ValidateTokenResponse {
+    Role role = 1;
+}
+
 service AuthService {
     rpc Login(LoginRequest) returns (LoginResponse);
+    rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
 }

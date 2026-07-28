@@ -153,6 +153,10 @@ void BookFormViewModel::save()
         setBusy(false);
 
         if (!result.success) {
+            if (result.connectivityError) {
+                Session::instance()->handleConnectivityIssue();
+                return;
+            }
             setErrorMessage(QString::fromStdString(result.error));
             return;
         }
@@ -177,6 +181,7 @@ void BookFormViewModel::save()
         ClientResult<void> voidResult;
         voidResult.success = result.success;
         voidResult.error = result.error;
+        voidResult.connectivityError = result.connectivityError;
         return voidResult;
     });
 

@@ -61,6 +61,10 @@ void BookListViewModel::refresh(const QString& search)
         setBusy(false);
 
         if (!result.success) {
+            if (result.connectivityError) {
+                Session::instance()->handleConnectivityIssue();
+                return;
+            }
             setErrorMessage(QString::fromStdString(result.error));
             return;
         }
@@ -101,6 +105,10 @@ void BookListViewModel::deleteBook(int id)
 
         if (!result.success) {
             setBusy(false);
+            if (result.connectivityError) {
+                Session::instance()->handleConnectivityIssue();
+                return;
+            }
             setErrorMessage(QString::fromStdString(result.error));
             return;
         }

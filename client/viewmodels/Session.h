@@ -19,6 +19,7 @@ class Session : public QObject {
     Q_PROPERTY(bool serverConfigured READ isServerConfigured NOTIFY serverConfiguredChanged)
     Q_PROPERTY(bool connecting READ isConnecting NOTIFY connectionStateChanged)
     Q_PROPERTY(QString connectionError READ connectionError NOTIFY connectionStateChanged)
+    Q_PROPERTY(bool rememberMe READ rememberMe WRITE setRememberMe NOTIFY rememberMeChanged)
 
 public:
     explicit Session(QObject* parent = nullptr);
@@ -35,11 +36,15 @@ public:
     bool isServerConfigured() const;
     bool isConnecting() const;
     QString connectionError() const;
+    bool rememberMe() const;
+    void setRememberMe(bool remember);
 
     Q_INVOKABLE void login(const QString& username, const QString& password);
     Q_INVOKABLE void logout();
     Q_INVOKABLE void connectToServer(const QString& address);
     Q_INVOKABLE void requestServerChange();
+    Q_INVOKABLE void handleConnectivityIssue();
+    Q_INVOKABLE void tryAutoLogin();
 
 signals:
     void authenticationChanged();
@@ -49,6 +54,7 @@ signals:
     void serverAddressChanged();
     void serverConfiguredChanged();
     void connectionStateChanged();
+    void rememberMeChanged();
 
 private:
     static Session* s_instance;
@@ -63,8 +69,12 @@ private:
     bool m_serverConfigured = false;
     bool m_connecting = false;
     QString m_connectionError;
+    bool m_rememberMe = false;
 
     void setBusy(bool busy);
     void setErrorMessage(const QString& message);
     void checkConnection();
+    void saveToken(const QString& token);
+    QString loadSavedToken() const;
+    void clearSavedToken();
 };

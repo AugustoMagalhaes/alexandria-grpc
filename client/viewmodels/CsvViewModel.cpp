@@ -60,6 +60,10 @@ void CsvViewModel::exportToFile(const QString& filePath)
         setBusy(false);
 
         if (!result.success) {
+            if (result.connectivityError) {
+                Session::instance()->handleConnectivityIssue();
+                return;
+            }
             setStatus(QString::fromStdString(result.error), true);
             return;
         }
@@ -111,6 +115,10 @@ void CsvViewModel::importFromFile(const QString& filePath, bool replace)
         setBusy(false);
 
         if (!result.success) {
+            if (result.connectivityError) {
+                Session::instance()->handleConnectivityIssue();
+                return;
+            }
             setStatus(QString::fromStdString(result.error), true);
             return;
         }

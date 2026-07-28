@@ -9,6 +9,16 @@ Item {
         color: Theme.backgroundColor
     }
 
+    Connections {
+        target: Session
+        function onAuthenticationChanged() {
+            if (!Session.authenticated) {
+                usernameField.text = ""
+                passwordField.text = ""
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         spacing: Theme.spacingMedium
@@ -41,6 +51,12 @@ Item {
             placeholderText: qsTr("Password")
             echoMode: TextInput.Password
             Layout.fillWidth: true
+        }
+
+        AppCheckBox {
+            text: qsTr("Remember me")
+            checked: Session.rememberMe
+            onCheckedChanged: Session.rememberMe = checked
         }
 
         AppButton {

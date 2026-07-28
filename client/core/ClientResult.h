@@ -7,6 +7,7 @@
 template <typename T>
 struct ClientResult {
     bool success = false;
+    bool connectivityError = false;
     std::optional<T> value;
     std::string error;
 
@@ -18,11 +19,12 @@ struct ClientResult {
         return result;
     }
 
-    static ClientResult<T> fail(std::string message)
+    static ClientResult<T> fail(std::string message, bool isConnectivityError = false)
     {
         ClientResult<T> result;
         result.success = false;
         result.error = std::move(message);
+        result.connectivityError = isConnectivityError;
         return result;
     }
 };
@@ -30,6 +32,7 @@ struct ClientResult {
 template <>
 struct ClientResult<void> {
     bool success = false;
+    bool connectivityError = false;
     std::string error;
 
     static ClientResult<void> ok()
@@ -39,11 +42,12 @@ struct ClientResult<void> {
         return result;
     }
 
-    static ClientResult<void> fail(std::string message)
+    static ClientResult<void> fail(std::string message, bool isConnectivityError = false)
     {
         ClientResult<void> result;
         result.success = false;
         result.error = std::move(message);
+        result.connectivityError = isConnectivityError;
         return result;
     }
 };

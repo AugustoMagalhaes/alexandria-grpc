@@ -54,6 +54,10 @@ void UserListViewModel::refresh()
         setBusy(false);
 
         if (!result.success) {
+            if (result.connectivityError) {
+                Session::instance()->handleConnectivityIssue();
+                return;
+            }
             setErrorMessage(QString::fromStdString(result.error));
             return;
         }
@@ -92,6 +96,10 @@ void UserListViewModel::deleteUser(int id)
 
         if (!result.success) {
             setBusy(false);
+            if (result.connectivityError) {
+                Session::instance()->handleConnectivityIssue();
+                return;
+            }
             setErrorMessage(QString::fromStdString(result.error));
             return;
         }

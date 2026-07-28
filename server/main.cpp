@@ -1,7 +1,9 @@
+#include <csignal>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include <QCoreApplication>
 #include <QString>
@@ -12,12 +14,12 @@
 #include "auth/SessionManager.h"
 #include "grpc/AuthServiceImpl.h"
 #include "grpc/BookServiceImpl.h"
-#include "service/CsvService.h"
 #include "grpc/UserServiceImpl.h"
 #include "persistence/Database.h"
 #include "persistence/SqliteBookRepository.h"
 #include "persistence/SqliteUserRepository.h"
 #include "service/BookService.h"
+#include "service/CsvService.h"
 #include "service/UserService.h"
 
 namespace {
@@ -47,6 +49,12 @@ void seedInitialAdminIfNeeded(IUserRepository& userRepository, UserService& user
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
+
+    sigset_t signalSet;
+    sigemptyset(&signalSet);
+    sigaddset(&signalSet, SIGINT);
+    sigaddset(&signalSet, SIGTERM);
+    pthread_sigmask(SIG_BLOCK, &signalSet, nullptr);
 
     const std::string databasePath = getEnvOrDefault("ALEXANDRIA_DB_PATH", "alexandria.db");
     const std::string listenAddress = getEnvOrDefault("ALEXANDRIA_LISTEN_ADDRESS", "0.0.0.0:50051");
@@ -79,7 +87,7 @@ int main(int argc, char** argv)
     builder.RegisterService(&userServiceImpl);
     builder.RegisterService(&authServiceImpl);
 
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
+    std::unique_ptr<grpc::Server> server = builder.BuildAndStart();
 
     if (!server) {
         std::cerr << "Failed to start gRPC server on " << listenAddress << std::endl;
@@ -89,7 +97,17 @@ int main(int argc, char** argv)
     std::cout << "Alexandria server listening on " << listenAddress << std::endl;
     std::cout << "Database: " << databasePath << std::endl;
 
+    std::thread signalThread([&signalSet, &server]() {
+        int receivedSignal = 0;
+        sigwait(&signalSet, &receivedSignal);
+        std::cout << "\nReceived signal " << receivedSignal << ", shutting down gracefully..." << std::endl;
+        server->Shutdown();
+    });
+
     server->Wait();
+    signalThread.join();
+
+    std::cout << "Server stopped." << std::endl;
 
     return 0;
 }

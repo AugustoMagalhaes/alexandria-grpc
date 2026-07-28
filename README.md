@@ -149,6 +149,33 @@ The container uses `--init` (tini) so that `SIGTERM`/`SIGINT` are forwarded corr
 
 Database persistence across container restarts is handled through a named Docker volume (`alexandria_data`, mounted at `/data`).
 
+### Building on Windows
+
+> **Note:** this project currently targets Linux, and the Windows build path described below has not yet been validated on a real Windows machine. The CMake configuration includes conditional logic (`if(WIN32)`) to resolve dependencies through [vcpkg](https://vcpkg.io) instead of pkg-config, but treat this section as a documented starting point rather than a verified procedure.
+
+Prerequisites:
+
+- Visual Studio 2022 (with the "Desktop development with C++" workload) or an equivalent MSVC toolchain
+- [vcpkg](https://github.com/microsoft/vcpkg), bootstrapped and integrated with CMake (`vcpkg integrate install`)
+- Qt 6.5+ for MSVC (via the Qt Online Installer)
+
+Dependencies (Protobuf, gRPC, libsodium) are declared in `vcpkg.json` and are expected to be resolved automatically by vcpkg's manifest mode when configuring the project, provided the vcpkg toolchain file is passed to CMake:
+
+```powershell
+cmake -S . -B build ^
+    -DCMAKE_TOOLCHAIN_FILE=<path-to-vcpkg>\scripts\buildsystems\vcpkg.cmake ^
+    -DCMAKE_PREFIX_PATH=<path-to-Qt>\6.5.0\msvc2019_64
+cmake --build build --config Release
+```
+
+To package the client for distribution, Qt provides `windeployqt`, which copies the required Qt DLLs (and QML modules) next to the built executable:
+
+```powershell
+windeployqt.exe --qmldir client\qml build\Release\alexandria_client.exe
+```
+
+The resulting folder (executable + DLLs) can then be zipped or wrapped in an installer for distribution to school computers. Packaging the server the same way, and testing the full client-server flow across two Windows machines on the same network, is left as a follow-up validation step.
+
 ## Testing
 
 Tests are run via CTest:
@@ -191,4 +218,4 @@ alexandria_grpc/
 
 - Sessions do not expire and are lost on server restart (see [Technical Decisions](#technical-decisions)).
 - No automatic reconnection backoff strategy — reconnection is retried on the next user action or app restart.
-- Windows packaging is not yet implemented (the project currently targets Linux; Windows support is a planned next step).
+- Windows support is prepared at the CMake/dependency level (vcpkg) but has not been validated on an actual Windows machine yet — see [Building on Windows](#building-on-windows).

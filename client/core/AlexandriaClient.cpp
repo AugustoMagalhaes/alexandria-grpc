@@ -1,5 +1,4 @@
 #include "core/AlexandriaClient.h"
-#include <chrono>
 
 namespace {
 
@@ -34,6 +33,11 @@ User fromProto(const alexandria::v1::User& proto)
     return user;
 }
 
+bool isConnectivity(const grpc::Status& status)
+{
+    return status.error_code() == grpc::StatusCode::UNAVAILABLE;
+}
+
 }
 
 AlexandriaClient::AlexandriaClient(const std::string& serverAddress)
@@ -52,6 +56,22 @@ void AlexandriaClient::attachToken(grpc::ClientContext& context) const
     }
 }
 
+bool AlexandriaClient::isConnectivityError(const grpc::Status& status)
+{
+    return isConnectivity(status);
+}
+
+ClientResult<void> AlexandriaClient::checkConnection(int timeoutMs)
+{
+    auto deadline = std::chrono::system_clock::now() + std::chrono::milliseconds(timeoutMs);
+
+    if (m_channel->WaitForConnected(deadline)) {
+        return ClientResult<void>::ok();
+    }
+
+    return ClientResult<void>::fail("Could not reach the server at the configured address.", true);
+}
+
 ClientResult<Role> AlexandriaClient::login(const std::string& username, const std::string& password)
 {
     alexandria::v1::LoginRequest request;
@@ -64,7 +84,7 @@ ClientResult<Role> AlexandriaClient::login(const std::string& username, const st
     grpc::Status status = m_authStub->Login(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<Role>::fail(status.error_message());
+        return ClientResult<Role>::fail(status.error_message(), isConnectivity(status));
     }
 
     {
@@ -111,7 +131,7 @@ ClientResult<Book> AlexandriaClient::createBook(const std::string& title, const 
     grpc::Status status = m_bookStub->CreateBook(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<Book>::fail(status.error_message());
+        return ClientResult<Book>::fail(status.error_message(), isConnectivity(status));
     }
 
     return ClientResult<Book>::ok(fromProto(response.book()));
@@ -129,7 +149,7 @@ ClientResult<Book> AlexandriaClient::getBook(int id)
     grpc::Status status = m_bookStub->GetBook(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<Book>::fail(status.error_message());
+        return ClientResult<Book>::fail(status.error_message(), isConnectivity(status));
     }
 
     return ClientResult<Book>::ok(fromProto(response.book()));
@@ -147,7 +167,7 @@ ClientResult<std::vector<Book>> AlexandriaClient::listBooks(const std::string& s
     grpc::Status status = m_bookStub->ListBooks(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<std::vector<Book>>::fail(status.error_message());
+        return ClientResult<std::vector<Book>>::fail(status.error_message(), isConnectivity(status));
     }
 
     std::vector<Book> books;
@@ -176,7 +196,7 @@ ClientResult<void> AlexandriaClient::updateBook(const Book& book)
     grpc::Status status = m_bookStub->UpdateBook(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<void>::fail(status.error_message());
+        return ClientResult<void>::fail(status.error_message(), isConnectivity(status));
     }
 
     return ClientResult<void>::ok();
@@ -194,7 +214,7 @@ ClientResult<void> AlexandriaClient::deleteBook(int id)
     grpc::Status status = m_bookStub->DeleteBook(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<void>::fail(status.error_message());
+        return ClientResult<void>::fail(status.error_message(), isConnectivity(status));
     }
 
     return ClientResult<void>::ok();
@@ -214,7 +234,7 @@ ClientResult<User> AlexandriaClient::createUser(const std::string& username, con
     grpc::Status status = m_userStub->CreateUser(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<User>::fail(status.error_message());
+        return ClientResult<User>::fail(status.error_message(), isConnectivity(status));
     }
 
     return ClientResult<User>::ok(fromProto(response.user()));
@@ -230,7 +250,7 @@ ClientResult<std::vector<User>> AlexandriaClient::listUsers()
     grpc::Status status = m_userStub->ListUsers(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<std::vector<User>>::fail(status.error_message());
+        return ClientResult<std::vector<User>>::fail(status.error_message(), isConnectivity(status));
     }
 
     std::vector<User> users;
@@ -253,21 +273,10 @@ ClientResult<void> AlexandriaClient::deleteUser(int id)
     grpc::Status status = m_userStub->DeleteUser(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<void>::fail(status.error_message());
+        return ClientResult<void>::fail(status.error_message(), isConnectivity(status));
     }
 
     return ClientResult<void>::ok();
-}
-
-ClientResult<void> AlexandriaClient::checkConnection(int timeoutMs)
-{
-    auto deadline = std::chrono::system_clock::now() + std::chrono::milliseconds(timeoutMs);
-
-    if (m_channel->WaitForConnected(deadline)) {
-        return ClientResult<void>::ok();
-    }
-
-    return ClientResult<void>::fail("Could not reach the server at the configured address.");
 }
 
 ClientResult<std::string> AlexandriaClient::exportBooksCsv()
@@ -280,7 +289,7 @@ ClientResult<std::string> AlexandriaClient::exportBooksCsv()
     grpc::Status status = m_bookStub->ExportBooks(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<std::string>::fail(status.error_message());
+        return ClientResult<std::string>::fail(status.error_message(), isConnectivity(status));
     }
 
     return ClientResult<std::string>::ok(response.csv_data());
@@ -299,7 +308,7 @@ ClientResult<CsvImportSummary> AlexandriaClient::importBooksCsv(const std::strin
     grpc::Status status = m_bookStub->ImportBooks(&context, request, &response);
 
     if (!status.ok()) {
-        return ClientResult<CsvImportSummary>::fail(status.error_message());
+        return ClientResult<CsvImportSummary>::fail(status.error_message(), isConnectivity(status));
     }
 
     if (!response.success()) {

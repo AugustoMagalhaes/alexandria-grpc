@@ -24,6 +24,8 @@ class AlexandriaClient {
 public:
     explicit AlexandriaClient(const std::string& serverAddress);
 
+    static bool isConnectivityError(const grpc::Status& status);
+
     ClientResult<Role> login(const std::string& username, const std::string& password);
     void logout();
     bool isAuthenticated() const;

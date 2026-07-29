@@ -7,8 +7,6 @@ import Alexandria
 Item {
     id: page
 
-    signal backRequested()
-
     UserListViewModel {
         id: viewModel
     }
@@ -118,53 +116,36 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        Rectangle {
+        RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 64
-            color: Theme.surfaceColor
-            border.color: Theme.borderColor
-            border.width: 1
+            Layout.margins: Theme.spacingMedium
+            spacing: Theme.spacingSmall
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: Theme.spacingMedium
-                anchors.rightMargin: Theme.spacingMedium
-                spacing: Theme.spacingSmall
+            Label {
+                text: qsTr("User Management")
+                font.pixelSize: Theme.fontSizeTitle
+                font.bold: true
+                color: Theme.textPrimary
+                Layout.fillWidth: true
+            }
 
-                Label {
-                    text: qsTr("User Management")
-                    font.pixelSize: Theme.fontSizeTitle
-                    font.bold: true
-                    color: Theme.textPrimary
+            AppButton {
+                text: qsTr("Export CSV")
+                onClicked: exportDialog.open()
+            }
+
+            AppButton {
+                text: qsTr("Import CSV")
+                onClicked: {
+                    csvImportDialog.resetForm()
+                    csvImportDialog.open()
                 }
+            }
 
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                AppButton {
-                    text: qsTr("Export CSV")
-                    onClicked: exportDialog.open()
-                }
-
-                AppButton {
-                    text: qsTr("Import CSV")
-                    onClicked: {
-                        csvImportDialog.resetForm()
-                        csvImportDialog.open()
-                    }
-                }
-
-                AppButton {
-                    text: qsTr("Add User")
-                    primary: true
-                    onClicked: userFormDialog.openForCreate()
-                }
-
-                AppButton {
-                    text: qsTr("Back to Books")
-                    onClicked: page.backRequested()
-                }
+            AppButton {
+                text: qsTr("Add User")
+                primary: true
+                onClicked: userFormDialog.openForCreate()
             }
         }
 
@@ -173,7 +154,6 @@ Item {
             color: csvExportModel.statusIsError ? Theme.errorColor : Theme.successColor
             visible: csvExportModel.statusMessage.length > 0
             Layout.leftMargin: Theme.spacingMedium
-            Layout.topMargin: Theme.spacingSmall
             Layout.bottomMargin: Theme.spacingSmall
         }
 
@@ -182,7 +162,6 @@ Item {
             Layout.preferredHeight: 44
             Layout.leftMargin: Theme.spacingMedium
             Layout.rightMargin: Theme.spacingMedium
-            Layout.topMargin: Theme.spacingMedium
             color: Theme.primaryColor
             radius: Theme.radiusSmall
 

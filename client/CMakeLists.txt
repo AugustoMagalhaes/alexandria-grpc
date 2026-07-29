@@ -42,6 +42,7 @@ qt_add_qml_module(alexandria_client
         qml/AdminPanelPage.qml
         qml/UserFormDialog.qml
         qml/CsvImportDialog.qml
+        qml/AppHeader.qml
     SOURCES
         viewmodels/BookListViewModel.h
         viewmodels/BookFormViewModel.h

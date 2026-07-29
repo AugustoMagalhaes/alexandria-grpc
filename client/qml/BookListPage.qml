@@ -6,8 +6,6 @@ import Alexandria
 Item {
     id: page
 
-    signal adminPanelRequested()
-
     BookListViewModel {
         id: viewModel
     }
@@ -99,48 +97,6 @@ Item {
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
-
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 64
-            color: Theme.surfaceColor
-            border.color: Theme.borderColor
-            border.width: 1
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: Theme.spacingMedium
-                anchors.rightMargin: Theme.spacingMedium
-                spacing: Theme.spacingSmall
-
-                Label {
-                    text: Session.isAdmin ? qsTr("Books (Administrator)") : qsTr("Books")
-                    font.pixelSize: Theme.fontSizeTitle
-                    font.bold: true
-                    color: Theme.textPrimary
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                AppButton {
-                    text: qsTr("Manage Users")
-                    visible: Session.isAdmin
-                    onClicked: page.adminPanelRequested()
-                }
-
-                AppButton {
-                    text: qsTr("Change server")
-                    onClicked: Session.requestServerChange()
-                }
-
-                AppButton {
-                    text: qsTr("Log out")
-                    onClicked: Session.logout()
-                }
-            }
-        }
 
         RowLayout {
             Layout.fillWidth: true

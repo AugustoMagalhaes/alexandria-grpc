@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Basic
+import QtQuick.Layouts
 import Alexandria
 
 ApplicationWindow {
@@ -24,16 +25,30 @@ ApplicationWindow {
         visible: Session.serverConfigured && !Session.authenticated
     }
 
-    BookListPage {
+    ColumnLayout {
         anchors.fill: parent
-        visible: Session.serverConfigured && Session.authenticated && !window.showAdminPanel
-        onAdminPanelRequested: window.showAdminPanel = true
-    }
+        spacing: 0
+        visible: Session.serverConfigured && Session.authenticated
 
-    AdminPanelPage {
-        anchors.fill: parent
-        visible: Session.serverConfigured && Session.authenticated && window.showAdminPanel
-        onBackRequested: window.showAdminPanel = false
+        AppHeader {
+            Layout.fillWidth: true
+            currentTab: window.showAdminPanel ? "users" : "books"
+            onTabSelected: (tab) => window.showAdminPanel = (tab === "users")
+            onChangeServerRequested: Session.requestServerChange()
+            onLogoutRequested: Session.logout()
+        }
+
+        BookListPage {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: !window.showAdminPanel
+        }
+
+        AdminPanelPage {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: window.showAdminPanel
+        }
     }
 
     Connections {

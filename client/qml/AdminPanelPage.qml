@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
-import QtQuick.Dialogs
 import Alexandria
 
 Item {
@@ -90,23 +89,6 @@ Item {
         onOpened: bulkDeleteContent.forceActiveFocus()
     }
 
-    CsvImportDialog {
-        id: csvImportDialog
-    }
-
-    FileDialog {
-        id: exportDialog
-        title: qsTr("Save CSV file")
-        fileMode: FileDialog.SaveFile
-        nameFilters: [qsTr("CSV files (*.csv)")]
-        defaultSuffix: "csv"
-        onAccepted: csvExportModel.exportToFile(selectedFile.toString().replace("file://", ""))
-    }
-
-    CsvViewModel {
-        id: csvExportModel
-    }
-
     Rectangle {
         anchors.fill: parent
         color: Theme.backgroundColor
@@ -130,31 +112,10 @@ Item {
             }
 
             AppButton {
-                text: qsTr("Export CSV")
-                onClicked: exportDialog.open()
-            }
-
-            AppButton {
-                text: qsTr("Import CSV")
-                onClicked: {
-                    csvImportDialog.resetForm()
-                    csvImportDialog.open()
-                }
-            }
-
-            AppButton {
                 text: qsTr("Add User")
-                primary: true
+                success: true
                 onClicked: userFormDialog.openForCreate()
             }
-        }
-
-        Label {
-            text: csvExportModel.statusMessage
-            color: csvExportModel.statusIsError ? Theme.errorColor : Theme.successColor
-            visible: csvExportModel.statusMessage.length > 0
-            Layout.leftMargin: Theme.spacingMedium
-            Layout.bottomMargin: Theme.spacingSmall
         }
 
         Rectangle {
@@ -199,7 +160,7 @@ Item {
 
             delegate: Rectangle {
                 width: ListView.view.width
-                height: 56
+                height: 64
                 radius: Theme.radiusSmall
                 color: Theme.surfaceColor
                 border.color: Theme.borderColor

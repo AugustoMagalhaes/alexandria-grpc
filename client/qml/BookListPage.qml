@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import Alexandria
 
 Item {
@@ -89,6 +90,24 @@ Item {
         onOpened: bulkDeleteContent.forceActiveFocus()
     }
 
+    CsvImportDialog {
+        id: csvImportDialog
+        importFinishedCallback: function() { viewModel.refresh(searchField.text) }
+    }
+
+    FileDialog {
+        id: exportDialog
+        title: qsTr("Save CSV file")
+        fileMode: FileDialog.SaveFile
+        nameFilters: [qsTr("CSV files (*.csv)")]
+        defaultSuffix: "csv"
+        onAccepted: csvExportModel.exportToFile(selectedFile.toString().replace("file://", ""))
+    }
+
+    CsvViewModel {
+        id: csvExportModel
+    }
+
     Rectangle {
         anchors.fill: parent
         color: Theme.backgroundColor
@@ -97,6 +116,42 @@ Item {
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: Theme.spacingMedium
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.rightMargin: Theme.spacingMedium
+            spacing: Theme.spacingSmall
+
+            Label {
+                text: qsTr("Books")
+                font.pixelSize: Theme.fontSizeTitle
+                font.bold: true
+                color: Theme.textPrimary
+            }
+
+            AppButton {
+                text: qsTr("Export CSV")
+                neutral: true
+                visible: Session.isAdmin
+                onClicked: exportDialog.open()
+            }
+
+            AppButton {
+                text: qsTr("Import CSV")
+                neutral: true
+                visible: Session.isAdmin
+                onClicked: {
+                    csvImportDialog.resetForm()
+                    csvImportDialog.open()
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+        }
 
         RowLayout {
             Layout.fillWidth: true
@@ -112,10 +167,18 @@ Item {
 
             AppButton {
                 text: qsTr("Add Book")
-                primary: true
+                success: true
                 visible: Session.isAdmin
                 onClicked: formDialog.openForCreate()
             }
+        }
+
+        Label {
+            text: csvExportModel.statusMessage
+            color: csvExportModel.statusIsError ? Theme.errorColor : Theme.successColor
+            visible: csvExportModel.statusMessage.length > 0
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.bottomMargin: Theme.spacingSmall
         }
 
         Rectangle {

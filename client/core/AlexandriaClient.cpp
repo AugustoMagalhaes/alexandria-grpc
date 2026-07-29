@@ -21,6 +21,10 @@ Book fromProto(const alexandria::v1::Book& proto)
     book.isbn = proto.isbn();
     book.totalCopies = proto.total_copies();
     book.availableCopies = proto.available_copies();
+    book.schoolCode = proto.school_code();
+    book.category = proto.category();
+    book.keywords = proto.keywords();
+    book.borrowable = proto.borrowable();
     return book;
 }
 
@@ -129,13 +133,25 @@ Role AlexandriaClient::currentRole() const
     return m_role;
 }
 
-ClientResult<Book> AlexandriaClient::createBook(const std::string& title, const std::string& author, const std::string& isbn, int totalCopies)
+ClientResult<Book> AlexandriaClient::createBook(
+    const std::string& title,
+    const std::string& author,
+    const std::string& isbn,
+    int totalCopies,
+    const std::string& schoolCode,
+    const std::string& category,
+    const std::string& keywords,
+    bool borrowable)
 {
     alexandria::v1::CreateBookRequest request;
     request.set_title(title);
     request.set_author(author);
     request.set_isbn(isbn);
     request.set_total_copies(totalCopies);
+    request.set_school_code(schoolCode);
+    request.set_category(category);
+    request.set_keywords(keywords);
+    request.set_borrowable(borrowable);
 
     alexandria::v1::CreateBookResponse response;
     grpc::ClientContext context;
@@ -201,6 +217,10 @@ ClientResult<void> AlexandriaClient::updateBook(const Book& book)
     protoBook->set_isbn(book.isbn);
     protoBook->set_total_copies(book.totalCopies);
     protoBook->set_available_copies(book.availableCopies);
+    protoBook->set_school_code(book.schoolCode);
+    protoBook->set_category(book.category);
+    protoBook->set_keywords(book.keywords);
+    protoBook->set_borrowable(book.borrowable);
 
     alexandria::v1::UpdateBookResponse response;
     grpc::ClientContext context;

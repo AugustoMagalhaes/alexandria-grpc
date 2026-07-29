@@ -16,6 +16,11 @@ QSqlDatabase& Database::handle()
     return m_db;
 }
 
+std::mutex& Database::mutex()
+{
+    return m_mutex;
+}
+
 bool Database::migrate()
 {
     QSqlQuery query(m_db);
@@ -25,11 +30,20 @@ bool Database::migrate()
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "title TEXT NOT NULL,"
         "author TEXT NOT NULL,"
-        "isbn TEXT NOT NULL,"
+        "isbn TEXT NOT NULL DEFAULT '',"
+        "school_code TEXT NOT NULL DEFAULT '',"
+        "category TEXT NOT NULL DEFAULT '',"
+        "keywords TEXT NOT NULL DEFAULT '',"
+        "borrowable INTEGER NOT NULL DEFAULT 1,"
         "total_copies INTEGER NOT NULL,"
         "available_copies INTEGER NOT NULL"
         ")"
         );
+
+    query.exec("ALTER TABLE books ADD COLUMN school_code TEXT NOT NULL DEFAULT ''");
+    query.exec("ALTER TABLE books ADD COLUMN category TEXT NOT NULL DEFAULT ''");
+    query.exec("ALTER TABLE books ADD COLUMN keywords TEXT NOT NULL DEFAULT ''");
+    query.exec("ALTER TABLE books ADD COLUMN borrowable INTEGER NOT NULL DEFAULT 1");
 
     const bool usersOk = query.exec(
         "CREATE TABLE IF NOT EXISTS users ("
@@ -41,9 +55,4 @@ bool Database::migrate()
         );
 
     return booksOk && usersOk;
-}
-
-std::mutex& Database::mutex()
-{
-    return m_mutex;
 }

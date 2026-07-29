@@ -5,10 +5,11 @@ import Alexandria
 ApplicationWindow {
     id: window
     width: 800
-    height: 600
+    height: 720
     minimumWidth: 400
-    minimumHeight: 300
+    minimumHeight: 400
     visible: true
+    visibility: Window.Maximized
     title: qsTr("Alexandria")
 
     property bool showAdminPanel: false

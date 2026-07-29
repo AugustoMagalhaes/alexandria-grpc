@@ -44,6 +44,7 @@ Item {
             id: usernameField
             placeholderText: qsTr("Username")
             Layout.fillWidth: true
+            Keys.onReturnPressed: passwordField.forceActiveFocus()
         }
 
         AppTextField {
@@ -51,6 +52,8 @@ Item {
             placeholderText: qsTr("Password")
             echoMode: TextInput.Password
             Layout.fillWidth: true
+            Keys.onReturnPressed: Session.login(usernameField.text, passwordField.text)
+            Keys.onEnterPressed: Session.login(usernameField.text, passwordField.text)
         }
 
         AppCheckBox {

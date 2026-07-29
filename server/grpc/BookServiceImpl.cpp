@@ -17,7 +17,16 @@ grpc::Status BookServiceImpl::CreateBook(grpc::ServerContext* context, const ale
         return authStatus;
     }
 
-    auto result = m_bookService.createBook(request->title(), request->author(), request->isbn(), request->total_copies());
+    auto result = m_bookService.createBook(
+        request->title(),
+        request->author(),
+        request->isbn(),
+        request->total_copies(),
+        request->school_code(),
+        request->category(),
+        request->keywords(),
+        request->borrowable()
+        );
 
     if (!result.success) {
         return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, result.error);

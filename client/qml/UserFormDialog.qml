@@ -59,6 +59,8 @@ Dialog {
             echoMode: TextInput.Password
             onTextChanged: formModel.password = text
             Layout.fillWidth: true
+            Keys.onReturnPressed: if (formModel.username.length > 0 && formModel.password.length >= 6 && !formModel.busy) formModel.save()
+            Keys.onEnterPressed: if (formModel.username.length > 0 && formModel.password.length >= 6 && !formModel.busy) formModel.save()
         }
 
         AppCheckBox {

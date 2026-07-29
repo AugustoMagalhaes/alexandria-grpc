@@ -35,6 +35,8 @@ Item {
             text: Session.serverAddress.length > 0 ? Session.serverAddress : "127.0.0.1:50051"
             visible: !Session.connecting
             Layout.fillWidth: true
+            Keys.onReturnPressed: Session.connectToServer(addressField.text)
+            Keys.onEnterPressed: Session.connectToServer(addressField.text)
         }
 
         AppButton {

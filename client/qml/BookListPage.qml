@@ -124,15 +124,27 @@ Item {
                     ColumnLayout {
                         spacing: 2
 
-                        Label {
-                            text: modelData.title
-                            font.bold: true
-                            font.pixelSize: Theme.fontSizeBody
-                            color: Theme.textPrimary
+                        RowLayout {
+                            spacing: 8
+
+                            Label {
+                                text: modelData.title
+                                font.bold: true
+                                font.pixelSize: Theme.fontSizeBody
+                                color: Theme.textPrimary
+                            }
+
+                            Label {
+                                text: qsTr("Not borrowable")
+                                font.pixelSize: Theme.fontSizeSmall
+                                color: Theme.errorColor
+                                visible: !modelData.borrowable
+                            }
                         }
 
                         Label {
                             text: modelData.author + " · " + modelData.availableCopies + "/" + modelData.totalCopies + qsTr(" available")
+                                + (modelData.category.length > 0 ? " · " + modelData.category : "")
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.textSecondary
                         }

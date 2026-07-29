@@ -76,6 +76,10 @@ void BookListViewModel::refresh(const QString& search)
             entry["title"] = QString::fromStdString(book.title);
             entry["author"] = QString::fromStdString(book.author);
             entry["isbn"] = QString::fromStdString(book.isbn);
+            entry["schoolCode"] = QString::fromStdString(book.schoolCode);
+            entry["category"] = QString::fromStdString(book.category);
+            entry["keywords"] = QString::fromStdString(book.keywords);
+            entry["borrowable"] = book.borrowable;
             entry["totalCopies"] = book.totalCopies;
             entry["availableCopies"] = book.availableCopies;
             m_books.append(entry);

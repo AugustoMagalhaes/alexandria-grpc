@@ -10,6 +10,8 @@ public:
     std::optional<User> create(const User& user, const std::string& passwordHash) override;
     std::vector<User> findAll() override;
     bool remove(int id) override;
+    bool updateRole(int id, Role role) override;
+    bool updatePassword(int id, const std::string& passwordHash) override;
     std::optional<UserCredentials> findCredentialsByUsername(const std::string& username) override;
 
 private:

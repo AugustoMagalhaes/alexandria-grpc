@@ -19,4 +19,6 @@ public:
     virtual std::vector<User> findAll() = 0;
     virtual bool remove(int id) = 0;
     virtual std::optional<UserCredentials> findCredentialsByUsername(const std::string& username) = 0;
+    virtual bool updateRole(int id, Role role) = 0;
+    virtual bool updatePassword(int id, const std::string& passwordHash) = 0;
 };

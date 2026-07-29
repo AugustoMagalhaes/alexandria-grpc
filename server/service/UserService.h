@@ -13,6 +13,7 @@ public:
     explicit UserService(IUserRepository& repository);
 
     ServiceResult<User> createUser(const std::string& username, const std::string& password, Role role);
+    OperationResult updateUser(int id, const std::string& password, Role role);
     std::vector<User> listUsers();
     OperationResult deleteUser(int id);
 

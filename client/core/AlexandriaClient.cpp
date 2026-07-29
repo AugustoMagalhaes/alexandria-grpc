@@ -391,3 +391,23 @@ std::string AlexandriaClient::token() const
     std::lock_guard<std::mutex> lock(m_tokenMutex);
     return m_token;
 }
+
+ClientResult<void> AlexandriaClient::updateUser(int id, const std::string& password, Role role)
+{
+    alexandria::v1::UpdateUserRequest request;
+    request.set_id(id);
+    request.set_password(password);
+    request.set_role(toProto(role));
+
+    alexandria::v1::UpdateUserResponse response;
+    grpc::ClientContext context;
+    attachToken(context);
+
+    grpc::Status status = m_userStub->UpdateUser(&context, request, &response);
+
+    if (!status.ok()) {
+        return ClientResult<void>::fail(status.error_message(), isConnectivity(status));
+    }
+
+    return ClientResult<void>::ok();
+}

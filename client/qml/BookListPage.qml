@@ -161,6 +161,15 @@ Item {
             Layout.bottomMargin: Theme.spacingSmall
         }
 
+        Label {
+            id: successMessageLabel
+            text: ""
+            color: Theme.successColor
+            visible: text.length > 0
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.bottomMargin: Theme.spacingSmall
+        }
+
         RowLayout {
             Layout.fillWidth: true
             Layout.margins: Theme.spacingMedium

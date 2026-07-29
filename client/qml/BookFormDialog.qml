@@ -27,11 +27,12 @@ Dialog {
     }
 
     property var bookSavedCallback: null
+    property bool showSuccess: false
 
-    BookFormViewModel {
-        id: formModel
-
-        onSaved: {
+    Timer {
+        id: closeTimer
+        interval: 700
+        onTriggered: {
             dialog.close()
             if (dialog.bookSavedCallback) {
                 dialog.bookSavedCallback()
@@ -39,8 +40,18 @@ Dialog {
         }
     }
 
+    BookFormViewModel {
+        id: formModel
+
+        onSaved: {
+            dialog.showSuccess = true
+            closeTimer.start()
+        }
+    }
+
     function openForCreate() {
         formModel.reset()
+        dialog.showSuccess = false
         dialog.open()
     }
 
@@ -55,6 +66,7 @@ Dialog {
         formModel.borrowable = book.borrowable
         formModel.totalCopies = book.totalCopies
         formModel.availableCopies = book.availableCopies
+        dialog.showSuccess = false
         dialog.open()
     }
 
@@ -177,10 +189,10 @@ Dialog {
         }
 
         Label {
-            text: formModel.errorMessage
-            color: Theme.errorColor
+            text: dialog.showSuccess ? qsTr("Saved successfully") : formModel.errorMessage
+            color: dialog.showSuccess ? Theme.successColor : Theme.errorColor
             wrapMode: Text.WordWrap
-            visible: formModel.errorMessage.length > 0
+            visible: dialog.showSuccess || formModel.errorMessage.length > 0
             Layout.fillWidth: true
         }
 

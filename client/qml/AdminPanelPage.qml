@@ -17,8 +17,14 @@ Item {
     }
 
     UserFormDialog {
-        id: userFormDialog
-        userSavedCallback: function() { viewModel.refresh() }
+            id: userFormDialog
+            userSavedCallback: function() { viewModel.refresh() }
+    }
+
+    Timer {
+        id: successMessageTimer
+        interval: 3000
+        onTriggered: successMessageLabel.text = ""
     }
 
     DeleteConfirmDialog {
@@ -118,6 +124,15 @@ Item {
             }
         }
 
+        Label {
+            id: successMessageLabel
+            text: ""
+            color: Theme.successColor
+            visible: text.length > 0
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.bottomMargin: Theme.spacingSmall
+        }
+
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 44
@@ -192,6 +207,11 @@ Item {
 
                     Item {
                         Layout.fillWidth: true
+                    }
+
+                    AppIconButton {
+                        iconType: "edit"
+                        onClicked: userFormDialog.openForEdit(modelData)
                     }
 
                     AppIconButton {

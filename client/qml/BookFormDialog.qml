@@ -78,6 +78,8 @@ Dialog {
                 text: formModel.title
                 onTextChanged: formModel.title = text
                 Layout.fillWidth: true
+                Keys.onReturnPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
+                Keys.onEnterPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
             }
 
             AppTextField {
@@ -85,6 +87,8 @@ Dialog {
                 text: formModel.author
                 onTextChanged: formModel.author = text
                 Layout.fillWidth: true
+                Keys.onReturnPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
+                Keys.onEnterPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
             }
 
             AppTextField {
@@ -92,6 +96,8 @@ Dialog {
                 text: formModel.isbn
                 onTextChanged: formModel.isbn = text
                 Layout.fillWidth: true
+                Keys.onReturnPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
+                Keys.onEnterPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
             }
 
             AppTextField {
@@ -99,6 +105,8 @@ Dialog {
                 text: formModel.schoolCode
                 onTextChanged: formModel.schoolCode = text
                 Layout.fillWidth: true
+                Keys.onReturnPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
+                Keys.onEnterPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
             }
 
             AppTextField {
@@ -106,6 +114,8 @@ Dialog {
                 text: formModel.category
                 onTextChanged: formModel.category = text
                 Layout.fillWidth: true
+                Keys.onReturnPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
+                Keys.onEnterPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
             }
 
             AppTextField {
@@ -113,6 +123,8 @@ Dialog {
                 text: formModel.keywords
                 onTextChanged: formModel.keywords = text
                 Layout.fillWidth: true
+                Keys.onReturnPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
+                Keys.onEnterPressed: if (formModel.title.length > 0 && formModel.author.length > 0 && !formModel.busy) formModel.save()
             }
 
             AppCheckBox {

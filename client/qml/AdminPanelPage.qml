@@ -156,7 +156,7 @@ Item {
 
                     AppButton {
                         text: qsTr("Delete")
-                        onClicked: deleteDialog.openFor({ id: modelData.id, title: modelData.username })
+                        onClicked: deleteDialog.openFor({ id: modelData.id, title: modelData.username }, qsTr("Delete User"))
                     }
                 }
             }

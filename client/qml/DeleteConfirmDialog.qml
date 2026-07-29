@@ -19,20 +19,36 @@ Dialog {
 
     property int targetBookId: 0
     property string targetTitle: ""
+    property string dialogTitle: qsTr("Confirm Deletion")
     property var onConfirmed: null
 
-    function openFor(book) {
-        targetBookId = book.id
-        targetTitle = book.title
+    function openFor(item, title) {
+        targetBookId = item.id
+        targetTitle = item.title
+        dialogTitle = title !== undefined ? title : qsTr("Confirm Deletion")
         dialog.open()
     }
 
+    onOpened: content.forceActiveFocus()
+
     ColumnLayout {
+        id: content
         anchors.fill: parent
         spacing: 16
+        focus: true
+
+        Keys.onReturnPressed: confirmAction()
+        Keys.onEnterPressed: confirmAction()
+
+        function confirmAction() {
+            dialog.close()
+            if (dialog.onConfirmed) {
+                dialog.onConfirmed(dialog.targetBookId)
+            }
+        }
 
         Label {
-            text: qsTr("Delete Book")
+            text: dialog.dialogTitle
             font.pixelSize: Theme.fontSizeTitle
             font.bold: true
             color: Theme.textPrimary
@@ -58,12 +74,7 @@ Dialog {
             AppButton {
                 text: qsTr("Delete")
                 primary: true
-                onClicked: {
-                    dialog.close()
-                    if (dialog.onConfirmed) {
-                        dialog.onConfirmed(dialog.targetBookId)
-                    }
-                }
+                onClicked: content.confirmAction()
             }
         }
     }

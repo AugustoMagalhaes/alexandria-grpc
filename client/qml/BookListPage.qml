@@ -163,7 +163,7 @@ Item {
                     AppButton {
                         text: qsTr("Delete")
                         visible: Session.isAdmin
-                        onClicked: deleteDialog.openFor(modelData)
+                        onClicked: deleteDialog.openFor(modelData, qsTr("Delete Book"))
                     }
                 }
             }

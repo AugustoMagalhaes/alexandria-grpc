@@ -153,6 +153,14 @@ Item {
             }
         }
 
+        Label {
+            text: csvExportModel.statusMessage
+            color: csvExportModel.statusIsError ? Theme.errorColor : Theme.successColor
+            visible: csvExportModel.statusMessage.length > 0
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.bottomMargin: Theme.spacingSmall
+        }
+
         RowLayout {
             Layout.fillWidth: true
             Layout.margins: Theme.spacingMedium
@@ -171,14 +179,6 @@ Item {
                 visible: Session.isAdmin
                 onClicked: formDialog.openForCreate()
             }
-        }
-
-        Label {
-            text: csvExportModel.statusMessage
-            color: csvExportModel.statusIsError ? Theme.errorColor : Theme.successColor
-            visible: csvExportModel.statusMessage.length > 0
-            Layout.leftMargin: Theme.spacingMedium
-            Layout.bottomMargin: Theme.spacingSmall
         }
 
         Rectangle {
@@ -204,7 +204,8 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                AppButton {
+                AppIconButton {
+                    iconType: "trash"
                     text: qsTr("Delete Selected")
                     enabled: viewModel.selectedCount > 0
                     onClicked: bulkDeleteDialog.open()
@@ -274,14 +275,14 @@ Item {
                         Layout.fillWidth: true
                     }
 
-                    AppButton {
-                        text: qsTr("Edit")
+                    AppIconButton {
+                        iconType: "edit"
                         visible: Session.isAdmin
                         onClicked: formDialog.openForEdit(modelData)
                     }
 
-                    AppButton {
-                        text: qsTr("Delete")
+                    AppIconButton {
+                        iconType: "trash"
                         visible: Session.isAdmin
                         onClicked: deleteDialog.openFor(modelData, qsTr("Delete Book"))
                     }

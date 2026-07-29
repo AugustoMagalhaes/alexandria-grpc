@@ -43,6 +43,9 @@ qt_add_qml_module(alexandria_client
         qml/UserFormDialog.qml
         qml/CsvImportDialog.qml
         qml/AppHeader.qml
+        qml/AppTrashIcon.qml
+        qml/AppEditIcon.qml
+        qml/AppIconButton.qml
     SOURCES
         viewmodels/BookListViewModel.h
         viewmodels/BookFormViewModel.h

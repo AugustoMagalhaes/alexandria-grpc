@@ -14,6 +14,7 @@ ApplicationWindow {
     title: qsTr("Alexandria")
 
     property bool showAdminPanel: false
+    property bool showServerSetup: false
 
     ServerSetupPage {
         anchors.fill: parent
@@ -32,22 +33,31 @@ ApplicationWindow {
 
         AppHeader {
             Layout.fillWidth: true
-            currentTab: window.showAdminPanel ? "users" : "books"
-            onTabSelected: (tab) => window.showAdminPanel = (tab === "users")
-            onChangeServerRequested: Session.requestServerChange()
+            currentTab: window.showServerSetup ? "server" : (window.showAdminPanel ? "users" : "books")
+            onTabSelected: (tab) => {
+                window.showServerSetup = false
+                window.showAdminPanel = (tab === "users")
+            }
+            onChangeServerRequested: window.showServerSetup = true
             onLogoutRequested: Session.logout()
         }
 
         BookListPage {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: !window.showAdminPanel
+            visible: !window.showAdminPanel && !window.showServerSetup
         }
 
         AdminPanelPage {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: window.showAdminPanel
+            visible: window.showAdminPanel && !window.showServerSetup
+        }
+
+        ServerSetupPage {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: window.showServerSetup
         }
     }
 
@@ -56,6 +66,12 @@ ApplicationWindow {
         function onAuthenticationChanged() {
             if (!Session.authenticated) {
                 window.showAdminPanel = false
+                window.showServerSetup = false
+            }
+        }
+        function onServerConfiguredChanged() {
+            if (Session.serverConfigured) {
+                window.showServerSetup = false
             }
         }
     }

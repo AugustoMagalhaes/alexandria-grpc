@@ -140,7 +140,8 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                AppButton {
+                AppIconButton {
+                    iconType: "trash"
                     text: qsTr("Delete Selected")
                     enabled: viewModel.selectedCount > 0
                     onClicked: bulkDeleteDialog.open()
@@ -193,8 +194,8 @@ Item {
                         Layout.fillWidth: true
                     }
 
-                    AppButton {
-                        text: qsTr("Delete")
+                    AppIconButton {
+                        iconType: "trash"
                         onClicked: deleteDialog.openFor({ id: modelData.id, title: modelData.username }, qsTr("Delete User"))
                     }
                 }

@@ -105,7 +105,7 @@ Rectangle {
 
         HeaderTab {
             text: qsTr("Change Server")
-            active: false
+            active: header.currentTab === "server"
             onClicked: header.changeServerRequested()
         }
     }

@@ -26,6 +26,11 @@ QString BookListViewModel::errorMessage() const
     return m_errorMessage;
 }
 
+int BookListViewModel::selectedCount() const
+{
+    return m_selectedIds.size();
+}
+
 void BookListViewModel::setBusy(bool busy)
 {
     if (m_busy != busy) {
@@ -38,6 +43,29 @@ void BookListViewModel::setErrorMessage(const QString& message)
 {
     m_errorMessage = message;
     emit errorMessageChanged();
+}
+
+void BookListViewModel::toggleSelection(int bookId)
+{
+    if (m_selectedIds.contains(bookId)) {
+        m_selectedIds.remove(bookId);
+    } else {
+        m_selectedIds.insert(bookId);
+    }
+    emit selectionChanged();
+}
+
+void BookListViewModel::clearSelection()
+{
+    if (!m_selectedIds.isEmpty()) {
+        m_selectedIds.clear();
+        emit selectionChanged();
+    }
+}
+
+bool BookListViewModel::isSelected(int bookId) const
+{
+    return m_selectedIds.contains(bookId);
 }
 
 void BookListViewModel::refresh(const QString& search)
@@ -85,6 +113,7 @@ void BookListViewModel::refresh(const QString& search)
             m_books.append(entry);
         }
 
+        clearSelection();
         emit booksChanged();
     });
 
@@ -126,4 +155,49 @@ void BookListViewModel::deleteBook(int id)
     });
 
     watcher->setFuture(future);
+}
+
+void BookListViewModel::deleteSelected()
+{
+    if (m_selectedIds.isEmpty()) {
+        return;
+    }
+
+    setBusy(true);
+    setErrorMessage(QString());
+
+    const QList<int> ids = m_selectedIds.values();
+    m_pendingDeletions = ids.size();
+
+    AlexandriaClient& client = Session::instance()->client();
+
+    for (int id : ids) {
+        auto* watcher = new QFutureWatcher<ClientResult<void>>(this);
+
+        QObject::connect(watcher, &QFutureWatcher<ClientResult<void>>::finished, this, [this, watcher]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
+
+            --m_pendingDeletions;
+
+            if (!result.success && result.connectivityError) {
+                Session::instance()->handleConnectivityIssue();
+                return;
+            }
+
+            if (!result.success) {
+                setErrorMessage(QString::fromStdString(result.error));
+            }
+
+            if (m_pendingDeletions <= 0) {
+                refresh(m_lastSearch);
+            }
+        });
+
+        QFuture<ClientResult<void>> future = QtConcurrent::run([&client, id]() {
+            return client.deleteBook(id);
+        });
+
+        watcher->setFuture(future);
+    }
 }

@@ -28,6 +28,69 @@ Item {
         onConfirmed: (id) => viewModel.deleteBook(id)
     }
 
+    Dialog {
+        id: bulkDeleteDialog
+        modal: true
+        anchors.centerIn: parent
+        width: 320
+        padding: 24
+
+        background: Rectangle {
+            color: Theme.surfaceColor
+            radius: Theme.radiusMedium
+            border.color: Theme.borderColor
+            border.width: 1
+        }
+
+        ColumnLayout {
+            id: bulkDeleteContent
+            anchors.fill: parent
+            spacing: 16
+            focus: true
+
+            Keys.onReturnPressed: confirmAction()
+            Keys.onEnterPressed: confirmAction()
+
+            function confirmAction() {
+                bulkDeleteDialog.close()
+                viewModel.deleteSelected()
+            }
+
+            Label {
+                text: qsTr("Delete Selected Books")
+                font.pixelSize: Theme.fontSizeTitle
+                font.bold: true
+                color: Theme.textPrimary
+            }
+
+            Label {
+                text: qsTr("Are you sure you want to delete %1 book(s)? This cannot be undone.").arg(viewModel.selectedCount)
+                color: Theme.textPrimary
+                wrapMode: Text.WordWrap
+                Layout.fillWidth: true
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignRight
+                spacing: 8
+
+                AppButton {
+                    text: qsTr("Cancel")
+                    onClicked: bulkDeleteDialog.close()
+                }
+
+                AppButton {
+                    text: qsTr("Delete")
+                    primary: true
+                    onClicked: bulkDeleteContent.confirmAction()
+                }
+            }
+        }
+
+        onOpened: bulkDeleteContent.forceActiveFocus()
+    }
+
     Rectangle {
         anchors.fill: parent
         color: Theme.backgroundColor
@@ -86,7 +149,7 @@ Item {
 
             AppTextField {
                 id: searchField
-                placeholderText: qsTr("Search by title or author")
+                placeholderText: qsTr("Search by title, author, category, school code or keywords")
                 Layout.fillWidth: true
                 onTextChanged: viewModel.refresh(text)
             }
@@ -99,11 +162,43 @@ Item {
             }
         }
 
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 44
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.rightMargin: Theme.spacingMedium
+            visible: Session.isAdmin
+            color: Theme.primaryColor
+            radius: Theme.radiusSmall
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Theme.spacingMedium
+                anchors.rightMargin: Theme.spacingMedium
+                spacing: Theme.spacingSmall
+
+                Label {
+                    text: viewModel.selectedCount > 0
+                        ? qsTr("%1 selected").arg(viewModel.selectedCount)
+                        : qsTr("No books selected")
+                    color: "white"
+                    Layout.fillWidth: true
+                }
+
+                AppButton {
+                    text: qsTr("Delete Selected")
+                    enabled: viewModel.selectedCount > 0
+                    onClicked: bulkDeleteDialog.open()
+                }
+            }
+        }
+
         ListView {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.leftMargin: Theme.spacingMedium
             Layout.rightMargin: Theme.spacingMedium
+            Layout.topMargin: Theme.spacingSmall
             model: viewModel.books
             spacing: Theme.spacingSmall
             clip: true
@@ -120,6 +215,12 @@ Item {
                     anchors.fill: parent
                     anchors.margins: Theme.spacingSmall
                     spacing: Theme.spacingSmall
+
+                    AppCheckBox {
+                        visible: Session.isAdmin
+                        checked: viewModel.isSelected(modelData.id)
+                        onCheckedChanged: viewModel.toggleSelection(modelData.id)
+                    }
 
                     ColumnLayout {
                         spacing: 2

@@ -76,6 +76,7 @@ target_link_libraries(alexandria_grpc_server
 
 add_executable(alexandria_server
     main.cpp
+    RunServer.cpp
 )
 
 target_link_libraries(alexandria_server
@@ -86,6 +87,11 @@ target_link_libraries(alexandria_server
         alexandria_grpc_server
         Qt6::Core
 )
+
+if(ALEXANDRIA_SERVER_TRAY)
+    target_compile_definitions(alexandria_server PRIVATE ALEXANDRIA_SERVER_TRAY)
+    target_link_libraries(alexandria_server PRIVATE Qt6::Widgets)
+endif()
 
 install(TARGETS alexandria_server
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

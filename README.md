@@ -27,6 +27,24 @@ Two roles are supported:
 - **Admin**: full CRUD on books, user management, CSV import/export.
 - **User**: read-only access to the book catalog (search and browse only).
 
+### Book catalog
+
+Each book carries the following metadata:
+
+- Title and author (required)
+- ISBN (optional — not every book a school owns has one)
+- School code (optional, a school-specific identifier, informational only)
+- Category (free text, e.g. "children", "adult", "education theory" — not a fixed list)
+- Keywords (free-text, comma-separated tags)
+- Borrowable flag (whether the book can leave the library)
+- Total and available copies
+
+Books can be searched by title, author, category, school code, or keywords. Admins can select multiple books (or users) at once for bulk deletion.
+
+### Session convenience
+
+The client supports a "Remember me" option on login, which persists the session token locally (via `QSettings`) so the app can skip the login screen on the next launch, as long as the token is still valid on the server. It also detects server connectivity loss during normal use (not just at login) and automatically returns to the reconnect screen.
+
 ## Architecture
 
 The system follows a layered architecture on both sides, with dependencies always pointing inward toward abstractions.
@@ -75,12 +93,14 @@ This section documents deliberate trade-offs made throughout the project, since 
 
 - **gRPC over Qt Remote Objects.** Qt Remote Objects would be the more idiomatic choice for a pure Qt-to-Qt scenario, but gRPC/Protobuf was chosen deliberately to demonstrate a technology explicitly relevant to distributed/connected systems, where a backend may not always be a Qt/C++ application.
 - **No TLS on the gRPC channel.** The server is designed to run on a trusted local network only, never exposed to the public internet. `grpc::InsecureServerCredentials()` reflects that constraint explicitly, not an oversight.
-- **Sessions are in-memory and volatile.** `SessionManager` does not persist tokens to disk. Restarting the server invalidates all active sessions. This was an accepted trade-off for simplicity; a production system serving many concurrent users over long uptimes might persist sessions in the database with expiration.
+- **Sessions are in-memory and volatile.** `SessionManager` does not persist tokens to disk server-side. Restarting the server invalidates all active sessions, including any locally remembered ones — this is an accepted trade-off for simplicity; a production system serving many concurrent users over long uptimes might persist sessions in the database with expiration.
 - **A single mutex protects all database access.** `QSqlDatabase`/`QSqlQuery` are not thread-safe, and gRPC serves each call on its own thread from an internal pool. A single mutex in `Database` serializes all queries. This trades some throughput for correctness; given the expected scale (a school library), this is not a meaningful bottleneck.
-- **ISBN uniqueness is enforced in the service layer, not via a database constraint.** This keeps the business rule explicit and testable in C++ without a live database, at the cost of relying on application code rather than the schema to guarantee the invariant.
+- **ISBN uniqueness is enforced in the service layer, not via a database constraint, and only when an ISBN is provided.** Since ISBN is optional, empty values never conflict with each other; this keeps the business rule explicit and testable in C++ without a live database.
+- **Optional book fields are stored as empty strings, not SQL NULL.** This avoids relaxing `NOT NULL` constraints on an evolving schema and keeps repository code simpler, at the cost of not being able to distinguish "explicitly empty" from "never set" at the database level — a distinction the application doesn't need.
 - **CSV import/export travels as a string over gRPC, not as a file path.** Since the client and server may run on different machines, the server generates/consumes CSV content in memory and the client handles the actual file I/O locally.
 - **Client-side role checks (hiding buttons) are UX only, not security.** The server independently re-validates every request's role via `auth_guard`, so a modified or malicious client gains no privilege by bypassing the UI.
 - **Connectivity errors are detected via a combination of `grpc::StatusCode::UNAVAILABLE` and known transport-error message substrings** (e.g. "Socket closed"), because gRPC C++ does not always surface network failures as `UNAVAILABLE` consistently across every failure mode.
+- **Bulk deletion is best-effort, not all-or-nothing.** Selecting multiple books or users for deletion fires one request per item; if one fails (e.g. attempting to delete the last remaining admin), the others still succeed and the failure is reported, rather than rolling back the whole batch.
 
 ## Getting Started
 
@@ -219,3 +239,6 @@ alexandria_grpc/
 - Sessions do not expire and are lost on server restart (see [Technical Decisions](#technical-decisions)).
 - No automatic reconnection backoff strategy — reconnection is retried on the next user action or app restart.
 - Windows support is prepared at the CMake/dependency level (vcpkg) but has not been validated on an actual Windows machine yet — see [Building on Windows](#building-on-windows).
+- CSV import/export currently carries only title, author, ISBN, and total copies; the newer optional fields (school code, category, keywords, borrowable) are not yet part of the CSV format.
+- User editing is limited to creation and deletion today; changing an existing user's username, password, or role is not yet supported.
+- Visual design (color theme, navigation header) is being actively refined and may not be fully consistent across every screen yet.

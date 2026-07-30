@@ -30,6 +30,7 @@ public:
 
     ClientResult<Role> login(const std::string& username, const std::string& password);
     ClientResult<Role> validateToken(const std::string& token);
+    ClientResult<void> updateUser(int id, const std::string& password, Role role);
     void logout();
     bool isAuthenticated() const;
     Role currentRole() const;

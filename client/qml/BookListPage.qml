@@ -1,12 +1,11 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import Alexandria
 
 Item {
     id: page
-
-    signal adminPanelRequested()
 
     BookListViewModel {
         id: viewModel
@@ -91,6 +90,24 @@ Item {
         onOpened: bulkDeleteContent.forceActiveFocus()
     }
 
+    CsvImportDialog {
+        id: csvImportDialog
+        importFinishedCallback: function() { viewModel.refresh(searchField.text) }
+    }
+
+    FileDialog {
+        id: exportDialog
+        title: qsTr("Save CSV file")
+        fileMode: FileDialog.SaveFile
+        nameFilters: [qsTr("CSV files (*.csv)")]
+        defaultSuffix: "csv"
+        onAccepted: csvExportModel.exportToFile(selectedFile.toString().replace("file://", ""))
+    }
+
+    CsvViewModel {
+        id: csvExportModel
+    }
+
     Rectangle {
         anchors.fill: parent
         color: Theme.backgroundColor
@@ -100,46 +117,57 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        Rectangle {
+        RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 64
-            color: Theme.surfaceColor
-            border.color: Theme.borderColor
-            border.width: 1
+            Layout.topMargin: Theme.spacingMedium
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.rightMargin: Theme.spacingMedium
+            spacing: Theme.spacingSmall
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: Theme.spacingMedium
-                anchors.rightMargin: Theme.spacingMedium
-                spacing: Theme.spacingSmall
+            Label {
+                text: qsTr("Books")
+                font.pixelSize: Theme.fontSizeTitle
+                font.bold: true
+                color: Theme.textPrimary
+            }
 
-                Label {
-                    text: Session.isAdmin ? qsTr("Books (Administrator)") : qsTr("Books")
-                    font.pixelSize: Theme.fontSizeTitle
-                    font.bold: true
-                    color: Theme.textPrimary
-                }
+            AppButton {
+                text: qsTr("Export CSV")
+                neutral: true
+                visible: Session.isAdmin
+                onClicked: exportDialog.open()
+            }
 
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                AppButton {
-                    text: qsTr("Manage Users")
-                    visible: Session.isAdmin
-                    onClicked: page.adminPanelRequested()
-                }
-
-                AppButton {
-                    text: qsTr("Change server")
-                    onClicked: Session.requestServerChange()
-                }
-
-                AppButton {
-                    text: qsTr("Log out")
-                    onClicked: Session.logout()
+            AppButton {
+                text: qsTr("Import CSV")
+                neutral: true
+                visible: Session.isAdmin
+                onClicked: {
+                    csvImportDialog.resetForm()
+                    csvImportDialog.open()
                 }
             }
+
+            Item {
+                Layout.fillWidth: true
+            }
+        }
+
+        Label {
+            text: csvExportModel.statusMessage
+            color: csvExportModel.statusIsError ? Theme.errorColor : Theme.successColor
+            visible: csvExportModel.statusMessage.length > 0
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.bottomMargin: Theme.spacingSmall
+        }
+
+        Label {
+            id: successMessageLabel
+            text: ""
+            color: Theme.successColor
+            visible: text.length > 0
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.bottomMargin: Theme.spacingSmall
         }
 
         RowLayout {
@@ -156,7 +184,7 @@ Item {
 
             AppButton {
                 text: qsTr("Add Book")
-                primary: true
+                success: true
                 visible: Session.isAdmin
                 onClicked: formDialog.openForCreate()
             }
@@ -185,7 +213,8 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                AppButton {
+                AppIconButton {
+                    iconType: "trash"
                     text: qsTr("Delete Selected")
                     enabled: viewModel.selectedCount > 0
                     onClicked: bulkDeleteDialog.open()
@@ -255,14 +284,14 @@ Item {
                         Layout.fillWidth: true
                     }
 
-                    AppButton {
-                        text: qsTr("Edit")
+                    AppIconButton {
+                        iconType: "edit"
                         visible: Session.isAdmin
                         onClicked: formDialog.openForEdit(modelData)
                     }
 
-                    AppButton {
-                        text: qsTr("Delete")
+                    AppIconButton {
+                        iconType: "trash"
                         visible: Session.isAdmin
                         onClicked: deleteDialog.openFor(modelData, qsTr("Delete Book"))
                     }

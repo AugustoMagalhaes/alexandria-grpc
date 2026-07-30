@@ -26,6 +26,22 @@ grpc::Status UserServiceImpl::CreateUser(grpc::ServerContext* context, const ale
     return grpc::Status::OK;
 }
 
+grpc::Status UserServiceImpl::UpdateUser(grpc::ServerContext* context, const alexandria::v1::UpdateUserRequest* request, alexandria::v1::UpdateUserResponse* response)
+{
+    auto authStatus = auth_guard::requireRole(context, m_authService, Role::Admin, nullptr);
+    if (!authStatus.ok()) {
+        return authStatus;
+    }
+
+    auto result = m_userService.updateUser(request->id(), request->password(), converters::fromProto(request->role()));
+
+    if (!result.success) {
+        return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, result.error);
+    }
+
+    return grpc::Status::OK;
+}
+
 grpc::Status UserServiceImpl::ListUsers(grpc::ServerContext* context, const alexandria::v1::ListUsersRequest*, alexandria::v1::ListUsersResponse* response)
 {
     auto authStatus = auth_guard::requireRole(context, m_authService, Role::Admin, nullptr);

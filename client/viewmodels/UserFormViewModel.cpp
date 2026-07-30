@@ -2,11 +2,25 @@
 
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
+
 #include "viewmodels/Session.h"
 
 UserFormViewModel::UserFormViewModel(QObject* parent)
     : QObject(parent)
 {
+}
+
+int UserFormViewModel::userId() const
+{
+    return m_userId;
+}
+
+void UserFormViewModel::setUserId(int id)
+{
+    if (m_userId != id) {
+        m_userId = id;
+        emit userIdChanged();
+    }
 }
 
 QString UserFormViewModel::username() const
@@ -58,6 +72,11 @@ QString UserFormViewModel::errorMessage() const
     return m_errorMessage;
 }
 
+bool UserFormViewModel::isEditing() const
+{
+    return m_userId != 0;
+}
+
 void UserFormViewModel::setBusy(bool busy)
 {
     if (m_busy != busy) {
@@ -74,6 +93,7 @@ void UserFormViewModel::setErrorMessage(const QString& message)
 
 void UserFormViewModel::reset()
 {
+    setUserId(0);
     setUsername(QString());
     setPassword(QString());
     setIsAdmin(false);
@@ -86,13 +106,16 @@ void UserFormViewModel::save()
     setErrorMessage(QString());
 
     AlexandriaClient& client = Session::instance()->client();
+    const bool editing = isEditing();
+
+    const int id = m_userId;
     const std::string username = m_username.toStdString();
     const std::string password = m_password.toStdString();
     const Role role = m_isAdmin ? Role::Admin : Role::User;
 
-    auto* watcher = new QFutureWatcher<ClientResult<User>>(this);
+    auto* watcher = new QFutureWatcher<ClientResult<void>>(this);
 
-    QObject::connect(watcher, &QFutureWatcher<ClientResult<User>>::finished, this, [this, watcher]() {
+    QObject::connect(watcher, &QFutureWatcher<ClientResult<void>>::finished, this, [this, watcher]() {
         auto result = watcher->result();
         watcher->deleteLater();
 
@@ -110,8 +133,18 @@ void UserFormViewModel::save()
         emit saved();
     });
 
-    QFuture<ClientResult<User>> future = QtConcurrent::run([&client, username, password, role]() {
-        return client.createUser(username, password, role);
+    QFuture<ClientResult<void>> future = QtConcurrent::run([&client, editing, id, username, password, role]() {
+        if (editing) {
+            return client.updateUser(id, password, role);
+        }
+
+        auto result = client.createUser(username, password, role);
+
+        ClientResult<void> voidResult;
+        voidResult.success = result.success;
+        voidResult.error = result.error;
+        voidResult.connectivityError = result.connectivityError;
+        return voidResult;
     });
 
     watcher->setFuture(future);

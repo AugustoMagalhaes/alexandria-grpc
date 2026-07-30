@@ -74,6 +74,30 @@ bool SqliteUserRepository::remove(int id)
     return query.exec() && query.numRowsAffected() > 0;
 }
 
+bool SqliteUserRepository::updateRole(int id, Role role)
+{
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
+    QSqlQuery query(m_database.handle());
+    query.prepare("UPDATE users SET role = :role WHERE id = :id");
+    query.bindValue(":role", static_cast<int>(role));
+    query.bindValue(":id", id);
+
+    return query.exec() && query.numRowsAffected() > 0;
+}
+
+bool SqliteUserRepository::updatePassword(int id, const std::string& passwordHash)
+{
+    std::lock_guard<std::mutex> lock(m_database.mutex());
+
+    QSqlQuery query(m_database.handle());
+    query.prepare("UPDATE users SET password_hash = :password_hash WHERE id = :id");
+    query.bindValue(":password_hash", QString::fromStdString(passwordHash));
+    query.bindValue(":id", id);
+
+    return query.exec() && query.numRowsAffected() > 0;
+}
+
 std::optional<UserCredentials> SqliteUserRepository::findCredentialsByUsername(const std::string& username)
 {
     std::lock_guard<std::mutex> lock(m_database.mutex());

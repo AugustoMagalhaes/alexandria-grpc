@@ -17,12 +17,22 @@ Dialog {
         border.width: 1
     }
 
+    Connections {
+        target: Session
+        function onServerConfiguredChanged() {
+            if (!Session.serverConfigured && dialog.opened) {
+                dialog.close()
+            }
+        }
+    }
+
     property var userSavedCallback: null
+    property bool showSuccess: false
 
-    UserFormViewModel {
-        id: formModel
-
-        onSaved: {
+    Timer {
+        id: closeTimer
+        interval: 700
+        onTriggered: {
             dialog.close()
             if (dialog.userSavedCallback) {
                 dialog.userSavedCallback()
@@ -30,8 +40,27 @@ Dialog {
         }
     }
 
+    UserFormViewModel {
+        id: formModel
+
+        onSaved: {
+            dialog.showSuccess = true
+            closeTimer.start()
+        }
+    }
+
     function openForCreate() {
         formModel.reset()
+        dialog.showSuccess = false
+        dialog.open()
+    }
+
+    function openForEdit(user) {
+        formModel.userId = user.id
+        formModel.username = user.username
+        formModel.password = ""
+        formModel.isAdmin = user.isAdmin
+        dialog.showSuccess = false
         dialog.open()
     }
 
@@ -40,7 +69,7 @@ Dialog {
         spacing: 16
 
         Label {
-            text: qsTr("Add User")
+            text: formModel.isEditing ? qsTr("Edit User") : qsTr("Add User")
             font.pixelSize: Theme.fontSizeTitle
             font.bold: true
             color: Theme.textPrimary
@@ -49,18 +78,19 @@ Dialog {
         AppTextField {
             placeholderText: qsTr("Username")
             text: formModel.username
+            enabled: !formModel.isEditing
             onTextChanged: formModel.username = text
             Layout.fillWidth: true
         }
 
         AppTextField {
-            placeholderText: qsTr("Password (min. 6 characters)")
+            placeholderText: formModel.isEditing ? qsTr("New password (leave blank to keep current)") : qsTr("Password (min. 6 characters)")
             text: formModel.password
             echoMode: TextInput.Password
             onTextChanged: formModel.password = text
             Layout.fillWidth: true
-            Keys.onReturnPressed: if (formModel.username.length > 0 && formModel.password.length >= 6 && !formModel.busy) formModel.save()
-            Keys.onEnterPressed: if (formModel.username.length > 0 && formModel.password.length >= 6 && !formModel.busy) formModel.save()
+            Keys.onReturnPressed: if (!dialog.showSuccess && formModel.username.length > 0 && !formModel.busy) formModel.save()
+            Keys.onEnterPressed: if (!dialog.showSuccess && formModel.username.length > 0 && !formModel.busy) formModel.save()
         }
 
         AppCheckBox {
@@ -70,10 +100,10 @@ Dialog {
         }
 
         Label {
-            text: formModel.errorMessage
-            color: Theme.errorColor
+            text: dialog.showSuccess ? qsTr("Saved successfully") : formModel.errorMessage
+            color: dialog.showSuccess ? Theme.successColor : Theme.errorColor
             wrapMode: Text.WordWrap
-            visible: formModel.errorMessage.length > 0
+            visible: dialog.showSuccess || formModel.errorMessage.length > 0
             Layout.fillWidth: true
         }
 
@@ -90,7 +120,13 @@ Dialog {
             AppButton {
                 text: qsTr("Save")
                 primary: true
-                enabled: formModel.username.length > 0 && formModel.password.length >= 6 && !formModel.busy
+                enabled: {
+                    if (formModel.busy) return false
+                    if (formModel.username.length === 0) return false
+                    if (!formModel.isEditing && formModel.password.length < 6) return false
+                    if (formModel.isEditing && formModel.password.length > 0 && formModel.password.length < 6) return false
+                    return true
+                }
                 onClicked: formModel.save()
             }
         }

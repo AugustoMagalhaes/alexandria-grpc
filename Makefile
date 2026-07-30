@@ -23,7 +23,7 @@ docker-build:
 	docker build -t $(DOCKER_IMAGE) .
 
 docker-run:
-        docker run --rm -it --init \
+	docker run --rm -it --init \
 		-p 50051:50051 \
 		-v alexandria_data:/data \
 		$(DOCKER_IMAGE)

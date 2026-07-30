@@ -1,13 +1,10 @@
 import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
-import QtQuick.Dialogs
 import Alexandria
 
 Item {
     id: page
-
-    signal backRequested()
 
     UserListViewModel {
         id: viewModel
@@ -20,8 +17,14 @@ Item {
     }
 
     UserFormDialog {
-        id: userFormDialog
-        userSavedCallback: function() { viewModel.refresh() }
+            id: userFormDialog
+            userSavedCallback: function() { viewModel.refresh() }
+    }
+
+    Timer {
+        id: successMessageTimer
+        interval: 3000
+        onTriggered: successMessageLabel.text = ""
     }
 
     DeleteConfirmDialog {
@@ -92,23 +95,6 @@ Item {
         onOpened: bulkDeleteContent.forceActiveFocus()
     }
 
-    CsvImportDialog {
-        id: csvImportDialog
-    }
-
-    FileDialog {
-        id: exportDialog
-        title: qsTr("Save CSV file")
-        fileMode: FileDialog.SaveFile
-        nameFilters: [qsTr("CSV files (*.csv)")]
-        defaultSuffix: "csv"
-        onAccepted: csvExportModel.exportToFile(selectedFile.toString().replace("file://", ""))
-    }
-
-    CsvViewModel {
-        id: csvExportModel
-    }
-
     Rectangle {
         anchors.fill: parent
         color: Theme.backgroundColor
@@ -118,62 +104,32 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        Rectangle {
+        RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 64
-            color: Theme.surfaceColor
-            border.color: Theme.borderColor
-            border.width: 1
+            Layout.margins: Theme.spacingMedium
+            spacing: Theme.spacingSmall
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: Theme.spacingMedium
-                anchors.rightMargin: Theme.spacingMedium
-                spacing: Theme.spacingSmall
+            Label {
+                text: qsTr("User Management")
+                font.pixelSize: Theme.fontSizeTitle
+                font.bold: true
+                color: Theme.textPrimary
+                Layout.fillWidth: true
+            }
 
-                Label {
-                    text: qsTr("User Management")
-                    font.pixelSize: Theme.fontSizeTitle
-                    font.bold: true
-                    color: Theme.textPrimary
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                AppButton {
-                    text: qsTr("Export CSV")
-                    onClicked: exportDialog.open()
-                }
-
-                AppButton {
-                    text: qsTr("Import CSV")
-                    onClicked: {
-                        csvImportDialog.resetForm()
-                        csvImportDialog.open()
-                    }
-                }
-
-                AppButton {
-                    text: qsTr("Add User")
-                    primary: true
-                    onClicked: userFormDialog.openForCreate()
-                }
-
-                AppButton {
-                    text: qsTr("Back to Books")
-                    onClicked: page.backRequested()
-                }
+            AppButton {
+                text: qsTr("Add User")
+                success: true
+                onClicked: userFormDialog.openForCreate()
             }
         }
 
         Label {
-            text: csvExportModel.statusMessage
-            color: csvExportModel.statusIsError ? Theme.errorColor : Theme.successColor
-            visible: csvExportModel.statusMessage.length > 0
+            id: successMessageLabel
+            text: ""
+            color: Theme.successColor
+            visible: text.length > 0
             Layout.leftMargin: Theme.spacingMedium
-            Layout.topMargin: Theme.spacingSmall
             Layout.bottomMargin: Theme.spacingSmall
         }
 
@@ -182,7 +138,6 @@ Item {
             Layout.preferredHeight: 44
             Layout.leftMargin: Theme.spacingMedium
             Layout.rightMargin: Theme.spacingMedium
-            Layout.topMargin: Theme.spacingMedium
             color: Theme.primaryColor
             radius: Theme.radiusSmall
 
@@ -200,7 +155,8 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                AppButton {
+                AppIconButton {
+                    iconType: "trash"
                     text: qsTr("Delete Selected")
                     enabled: viewModel.selectedCount > 0
                     onClicked: bulkDeleteDialog.open()
@@ -220,7 +176,7 @@ Item {
 
             delegate: Rectangle {
                 width: ListView.view.width
-                height: 56
+                height: 64
                 radius: Theme.radiusSmall
                 color: Theme.surfaceColor
                 border.color: Theme.borderColor
@@ -253,8 +209,13 @@ Item {
                         Layout.fillWidth: true
                     }
 
-                    AppButton {
-                        text: qsTr("Delete")
+                    AppIconButton {
+                        iconType: "edit"
+                        onClicked: userFormDialog.openForEdit(modelData)
+                    }
+
+                    AppIconButton {
+                        iconType: "trash"
                         onClicked: deleteDialog.openFor({ id: modelData.id, title: modelData.username }, qsTr("Delete User"))
                     }
                 }

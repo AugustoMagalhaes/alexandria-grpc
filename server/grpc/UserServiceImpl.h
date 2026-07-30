@@ -9,6 +9,7 @@ public:
     UserServiceImpl(UserService& userService, AuthService& authService);
 
     grpc::Status CreateUser(grpc::ServerContext* context, const alexandria::v1::CreateUserRequest* request, alexandria::v1::CreateUserResponse* response) override;
+    grpc::Status UpdateUser(grpc::ServerContext* context, const alexandria::v1::UpdateUserRequest* request, alexandria::v1::UpdateUserResponse* response) override;
     grpc::Status ListUsers(grpc::ServerContext* context, const alexandria::v1::ListUsersRequest* request, alexandria::v1::ListUsersResponse* response) override;
     grpc::Status DeleteUser(grpc::ServerContext* context, const alexandria::v1::DeleteUserRequest* request, alexandria::v1::DeleteUserResponse* response) override;
 

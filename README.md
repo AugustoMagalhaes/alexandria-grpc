@@ -141,11 +141,32 @@ Qt 6 itself is expected to be installed separately (e.g. via the Qt Online Insta
 ### Build and run natively
 
 ```bash
-make build
-make run       # runs the server
+make build-server
+make run-server     # runs the server (with a system tray icon on desktop platforms)
+
+make build-client
+make run-client     # runs the client
 ```
 
+Other available Makefile targets:
+
+| Target             | Description                                                             |
+|--------------------|--------------------------------------------------------------------------|
+| `make configure`   | Runs CMake configuration only                                            |
+| `make build`       | Configures and builds the whole project                                  |
+| `make build-server`| Configures and builds only the server target                             |
+| `make build-client`| Configures and builds only the client target                             |
+| `make test`        | Builds and runs the full test suite via CTest                            |
+| `make run`         | Alias for `make run-server`                                              |
+| `make run-server`  | Runs the already-built server (run `make build-server` first)            |
+| `make run-client`  | Runs the already-built client (run `make build-client` first)            |
+| `make clean`       | Removes the build directory                                              |
+| `make docker-build`| Builds the server Docker image                                          |
+| `make docker-run`  | Runs the server in a Docker container                                  |
+
 The server listens on `0.0.0.0:50051` by default and creates `alexandria.db` in the working directory. On first run, it seeds an initial administrator account (`admin` / `admin123` — change this password after first login).
+
+On desktop platforms (native builds only, not Docker), the server shows a small status window and a system tray icon; closing the window minimizes it to the tray rather than quitting, and "Quit" from the tray menu performs the same graceful shutdown as `Ctrl+C`. Set `ALEXANDRIA_HEADLESS=1` to force console-only mode even in a tray-enabled build. This is controlled by the `ALEXANDRIA_SERVER_TRAY` CMake option (default `ON`; the Docker image builds with it `OFF`, since there is no display available inside the container).
 
 Configuration is done via environment variables:
 
@@ -153,8 +174,9 @@ Configuration is done via environment variables:
 |-------------------------------|-----------------------|------------------------------------|
 | `ALEXANDRIA_DB_PATH`          | `alexandria.db`       | Path to the SQLite database file   |
 | `ALEXANDRIA_LISTEN_ADDRESS`   | `0.0.0.0:50051`       | Address/port the server listens on |
+| `ALEXANDRIA_HEADLESS`         | `0`                   | Force console mode, skipping the tray icon, in tray-enabled builds |
 
-To run the client, build the project with the desktop Qt kit through Qt Creator (or `cmake --build`), then run `alexandria_client`. On first launch it will ask for the server's address (e.g. `192.168.1.10:50051`).
+On first launch, the client will ask for the server's address (e.g. `192.168.1.10:50051`).
 
 ### Run with Docker
 

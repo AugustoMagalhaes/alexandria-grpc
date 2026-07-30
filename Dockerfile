@@ -27,6 +27,7 @@ RUN cmake -S . -B build \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_TESTING=OFF \
     -DBUILD_CLIENT=OFF \
+    -DALEXANDRIA_SERVER_TRAY=OFF \
     && cmake --build build --target alexandria_server -j$(nproc)
 
 FROM fedora:41

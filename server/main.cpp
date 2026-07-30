@@ -1,15 +1,13 @@
-#include <csignal>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <thread>
 
-#include <QCoreApplication>
 #include <QString>
 
 #include <grpcpp/grpcpp.h>
 
+#include "RunServer.h"
 #include "auth/AuthService.h"
 #include "auth/SessionManager.h"
 #include "grpc/AuthServiceImpl.h"
@@ -21,6 +19,12 @@
 #include "service/BookService.h"
 #include "service/CsvService.h"
 #include "service/UserService.h"
+
+#ifdef ALEXANDRIA_SERVER_TRAY
+#include <QApplication>
+#else
+#include <QCoreApplication>
+#endif
 
 namespace {
 
@@ -48,13 +52,12 @@ void seedInitialAdminIfNeeded(IUserRepository& userRepository, UserService& user
 
 int main(int argc, char** argv)
 {
+#ifdef ALEXANDRIA_SERVER_TRAY
+    QApplication app(argc, argv);
+    const bool headless = getEnvOrDefault("ALEXANDRIA_HEADLESS", "0") == "1";
+#else
     QCoreApplication app(argc, argv);
-
-    sigset_t signalSet;
-    sigemptyset(&signalSet);
-    sigaddset(&signalSet, SIGINT);
-    sigaddset(&signalSet, SIGTERM);
-    pthread_sigmask(SIG_BLOCK, &signalSet, nullptr);
+#endif
 
     const std::string databasePath = getEnvOrDefault("ALEXANDRIA_DB_PATH", "alexandria.db");
     const std::string listenAddress = getEnvOrDefault("ALEXANDRIA_LISTEN_ADDRESS", "0.0.0.0:50051");
@@ -97,17 +100,11 @@ int main(int argc, char** argv)
     std::cout << "Alexandria server listening on " << listenAddress << std::endl;
     std::cout << "Database: " << databasePath << std::endl;
 
-    std::thread signalThread([&signalSet, &server]() {
-        int receivedSignal = 0;
-        sigwait(&signalSet, &receivedSignal);
-        std::cout << "\nReceived signal " << receivedSignal << ", shutting down gracefully..." << std::endl;
-        server->Shutdown();
-    });
+#ifdef ALEXANDRIA_SERVER_TRAY
+    if (!headless) {
+        return runServerWithTray(app, server.get(), listenAddress, databasePath);
+    }
+#endif
 
-    server->Wait();
-    signalThread.join();
-
-    std::cout << "Server stopped." << std::endl;
-
-    return 0;
+    return runServerHeadless(server.get());
 }

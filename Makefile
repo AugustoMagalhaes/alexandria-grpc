@@ -2,7 +2,7 @@ BUILD_DIR := build
 DOCKER_IMAGE := alexandria-server
 QT_PREFIX_PATH ?= $(HOME)/Qt/6.11.1/gcc_64
 
-.PHONY: configure build test run clean docker-build docker-run
+.PHONY: configure build build-server build-client test run run-server run-client clean docker-build docker-run
 
 configure:
 	cmake -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$(QT_PREFIX_PATH)
@@ -10,11 +10,22 @@ configure:
 build: configure
 	cmake --build $(BUILD_DIR) -j$(shell nproc)
 
+build-server: configure
+	cmake --build $(BUILD_DIR) --target alexandria_server -j$(shell nproc)
+
+build-client: configure
+	cmake --build $(BUILD_DIR) --target alexandria_client -j$(shell nproc)
+
 test: build
 	ctest --test-dir $(BUILD_DIR) --output-on-failure
 
-run: build
+run-server:
 	./$(BUILD_DIR)/server/alexandria_server
+
+run-client:
+	./$(BUILD_DIR)/client/alexandria_client
+
+run: run-server
 
 clean:
 	rm -rf $(BUILD_DIR)

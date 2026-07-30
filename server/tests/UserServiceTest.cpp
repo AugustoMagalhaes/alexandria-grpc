@@ -116,3 +116,60 @@ TEST_F(UserServiceTest, DeleteUserSucceedsForRegularUser)
 
     EXPECT_TRUE(result.success);
 }
+
+TEST_F(UserServiceTest, UpdateUserChangesRole)
+{
+    User existing;
+    existing.id = 3;
+    existing.role = Role::User;
+
+    EXPECT_CALL(repository, findAll()).WillOnce(Return(std::vector<User>{existing}));
+    EXPECT_CALL(repository, updateRole(3, Role::Admin)).WillOnce(Return(true));
+
+    auto result = service->updateUser(3, "", Role::Admin);
+
+    EXPECT_TRUE(result.success);
+}
+
+TEST_F(UserServiceTest, UpdateUserChangesPasswordWhenProvided)
+{
+    User existing;
+    existing.id = 3;
+    existing.role = Role::User;
+
+    EXPECT_CALL(repository, findAll()).WillOnce(Return(std::vector<User>{existing}));
+    EXPECT_CALL(repository, updateRole(3, Role::User)).WillOnce(Return(true));
+    EXPECT_CALL(repository, updatePassword(3, _)).WillOnce(Return(true));
+
+    auto result = service->updateUser(3, "newpassword123", Role::User);
+
+    EXPECT_TRUE(result.success);
+}
+
+TEST_F(UserServiceTest, UpdateUserFailsWhenRemovingLastAdmin)
+{
+    User admin;
+    admin.id = 1;
+    admin.role = Role::Admin;
+
+    EXPECT_CALL(repository, findAll()).WillOnce(Return(std::vector<User>{admin}));
+
+    auto result = service->updateUser(1, "", Role::User);
+
+    EXPECT_FALSE(result.success);
+    EXPECT_EQ(result.error, "Cannot remove admin privileges from the last remaining admin");
+}
+
+TEST_F(UserServiceTest, UpdateUserFailsWithShortPassword)
+{
+    User existing;
+    existing.id = 3;
+    existing.role = Role::User;
+
+    EXPECT_CALL(repository, findAll()).WillOnce(Return(std::vector<User>{existing}));
+
+    auto result = service->updateUser(3, "abc", Role::User);
+
+    EXPECT_FALSE(result.success);
+    EXPECT_EQ(result.error, "Password must have at least 6 characters");
+}
